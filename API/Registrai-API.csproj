@@ -16,7 +16,10 @@
 	  <None Remove="Modules\**" />
 	  <None Remove="Shared\**" />
 	</ItemGroup>
-
+	
+	<ItemGroup>
+		<Content Update="appsettings.json" CopyToPublishDirectory="Never" />
+	</ItemGroup>
 
 
 	<ItemGroup>
