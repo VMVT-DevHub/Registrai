@@ -27,7 +27,7 @@ namespace App {
 		/// <param name="param">Užklausos parametrai</param>
 		/// <returns>Npgsql duomenų skaitytuvas</returns>
 		public static async Task<NpgsqlDataReader> Read(string sql, Dictionary<string,object?>? param=null) {
-			var conn = new NpgsqlConnection(ConnStr); await conn.OpenAsync();
+			using var conn = new NpgsqlConnection(ConnStr); await conn.OpenAsync();
 			using var command = new NpgsqlCommand(sql, conn);
 			if (param?.Count > 0) foreach (var p in param) command.Parameters.Add(new(p.Key,p.Value));
 			return await command.ExecuteReaderAsync();
@@ -45,7 +45,7 @@ namespace App {
 			var qry = $"{table}{where}";
 			if (param?.Count > 0) foreach (var i in param) qry += i.Value?.ToString();
 			if (Counts.TryGetValue(qry, out var cnt)) return cnt;
-			var rdr = await Read($"SELECT count(*) FROM {table}{where};", param);
+			using var rdr = await Read($"SELECT count(*) FROM {table}{where};", param);
 			if(await rdr.ReadAsync()) return Counts[qry] = rdr.GetInt32(0);
 			return 0;
 		}
