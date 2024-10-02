@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<RootNamespace>API</RootNamespace>
+		<AssemblyName>API.Web</AssemblyName>
+	</PropertyGroup>
+	<ItemGroup>
+	  <Compile Remove="Modules\**" />
+	  <Compile Remove="Shared\**" />
+	  <Content Remove="Modules\**" />
+	  <Content Remove="Shared\**" />
+	  <EmbeddedResource Remove="Modules\**" />
+	  <EmbeddedResource Remove="Shared\**" />
+	  <None Remove="Modules\**" />
+	  <None Remove="Shared\**" />
+	</ItemGroup>
+
+
+
+	<ItemGroup>
+	  <ProjectReference Include="Modules\AR\AR.csproj" />
+	  <ProjectReference Include="Shared\Npgsql\Npgsql.csproj" />
+	  <ProjectReference Include="Shared\Routing\Routing.csproj" />
+	</ItemGroup>
+
+	<PropertyGroup Condition="'$(Configuration)'=='Debug'">
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+	  <DebugType>none</DebugType>
+	</PropertyGroup>
+
+</Project>

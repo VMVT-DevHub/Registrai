@@ -1,0 +1,73 @@
+﻿using System.Text.Json.Serialization;
+using System.Text.Json;
+using System.Runtime.CompilerServices;
+using System.Text;
+
+using System;
+using System.Globalization;
+using static System.Net.Mime.MediaTypeNames;
+using System.Text.RegularExpressions;
+
+namespace App.Routing;
+
+/// <summary>Plėtiniai</summary>
+public static partial class Extensions {
+	/// <summary>Pridėti API maršrutą</summary>
+	/// <typeparam name="T">Atsakymo tipas</typeparam>
+	/// <param name="app"></param>
+	/// <param name="route">Maršrutas</param>
+	/// <returns></returns>
+	public static WebApplication Attach<T>(this WebApplication app, Route<T> route) {
+		var bld = route.Method switch {
+			Method.Get => app.MapGet(route.Path, route.Handler),
+			Method.Post => app.MapPost(route.Path, route.Handler),
+			Method.Put => app.MapPut(route.Path, route.Handler),
+			Method.Patch => app.MapPatch(route.Path, route.Handler),
+			Method.Delete => app.MapDelete(route.Path, route.Handler),
+			_ => app.Map(route.Path, route.Handler),
+		};
+#if DEBUG //Disable Swagger
+		bld.Swagger("", route.Description, route.Tag).Produces<T>(route.Status);
+		if (route.Errors?.Count > 0) { bld.Errors([.. route.Errors]); }
+#endif
+		return app;
+	}
+
+	public static int Limit(this int num, int max) => num > max ? max : num;
+
+
+	public static string RemoveAccents(this string text) {
+		var str = text.Normalize(NormalizationForm.FormD);
+		var sb = new StringBuilder(capacity: str.Length);
+		for (int i = 0; i < str.Length; i++) {
+			char c = str[i];
+			if (CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark) sb.Append(c);
+		}
+		return sb.ToString().Normalize(NormalizationForm.FormC);
+	}
+
+	public static string RemoveNonAlphanumeric(this string text, bool dash = false) {
+		if (string.IsNullOrEmpty(text)) return text;
+		var sb = new StringBuilder();
+		foreach (char c in text) {
+			//if (exc is not null && exc.Contains(c)) sb.Append(c); else 
+			sb.Append(char.IsLetterOrDigit(c) || (dash && c=='-') ? c : ' ');
+		}
+		return RgxMultiSpace().Replace(sb.ToString(), " ").Trim();
+	}
+
+	public static string RemWords(this string text, List<string> words) {
+		var sp = text.Split(" "); var ret = new List<string>();
+		foreach(var i in sp) if (!words.Contains(i)) ret.Add(i);
+		return string.Join(" ", ret);
+	}
+
+	[GeneratedRegex(@"\s+")] private static partial Regex RgxMultiSpace();
+
+
+	public static string AddN(this List<string> lst, params string?[] val) {
+		var ls = val.Where(s => !string.IsNullOrWhiteSpace(s)).ToArray(); var ret = "";
+		if (ls.Length > 0) { ret = string.Join(" ", ls); lst.Add(ret); }
+		return ret;
+	}
+}
