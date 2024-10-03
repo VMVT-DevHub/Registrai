@@ -23,11 +23,11 @@ public static class Details {
 	/// <returns></returns>
 	public static async Task Detales(HttpContext ctx, int id, bool? details=false) {
 		var dtl = details ?? true;
-		using var rdr = await DB.Read(
+		using var db = new DBRead(
 			"SELECT id, src, pavad, vietove, tipas, reg_data, aob_post, aob_lks, aob_wgs, " +
 				//  0   1    2      3        4      5         6         7        8
 				"adm_kodas, sav_kodas, sen_kodas, gyv_kodas, gat_kodas, aob_kodas, aob_nr, aob_korpusas, aob_patalpa " +
-				//9          10         11         12         13         14         15      16            17
+			//9          10         11         12         13         14         15      16            17
 			(dtl ?
 				",adm_vardas, adm_tipas, adm_trump, adm_cnt, " +
 				//18          19         20         21
@@ -41,6 +41,7 @@ public static class Details {
 			//	  37          38         39         40       41
 			: "") +
 			$"FROM ar.v_app_detales WHERE id={id}");
+		using var rdr = await db.GetReader();
 		var ret = new AR_Item() { ID = id };
 		if (await rdr.ReadAsync()) {
 

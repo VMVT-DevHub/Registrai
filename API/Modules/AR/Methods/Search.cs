@@ -23,7 +23,8 @@ public static class Search {
 	public static List<string> RemTypes { get {
 			//TODO: Reload CACHE!!!
 			if (CachedRemTypes is null) {
-				using var rdr = DB.Read("SELECT tipas FROM ar.v_app_types;").Result;
+				using var db = new DBRead("SELECT tipas FROM ar.v_app_types;");
+				using var rdr = db.GetReader().Result;
 				var ret = new List<string>(); while (rdr.Read()) ret.AddN(rdr.GetStringN(0)?.RemoveAccents().RemoveNonAlphanumeric(true)); CachedRemTypes = ret;
 			}
 			return CachedRemTypes;

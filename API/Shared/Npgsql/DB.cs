@@ -1,4 +1,5 @@
 ﻿using Npgsql;
+using Npgsql.Internal;
 using Npgsql.Internal.Postgres;
 using NpgsqlTypes;
 using System;
@@ -9,12 +10,54 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace App {
+	/// <summary></summary>
+	public class DBRead : IDisposable {
+		private NpgsqlConnection Conn { get; }
+		private NpgsqlCommand Cmd { get; }
+		/// <summary>Duomenų skaitymas</summary>
+		/// <returns>Npgsql duomenų skaitytuvas</returns>
+		public async Task<NpgsqlDataReader> GetReader() {
+			await Conn.OpenAsync();
+			return await Cmd.ExecuteReaderAsync();
+		}
+
+		/// <summary></summary>
+		/// <param name="sql"></param>
+		/// <param name="param"></param>
+		public DBRead(string sql, Dictionary<string, object?>? param = null) {
+			Conn = new NpgsqlConnection(App.DB.ConnStr);
+			Cmd = new NpgsqlCommand(sql, Conn);
+			if (param?.Count > 0) foreach (var p in param) Cmd.Parameters.Add(new(p.Key, p.Value));
+		}
+
+		// To detect redundant calls
+		private bool IsDisposed;
+		/// <summary>Duomenų bazės uždarymo metodas</summary>
+		public void Dispose() { Dispose(true); GC.SuppressFinalize(this); }
+		/// <summary>Duomenų bazės uždarymo metodas</summary>
+		/// <param name="disposing"></param>
+		protected virtual void Dispose(bool disposing) {
+			if (!IsDisposed) {
+				if (disposing) {
+					try {
+						Cmd.Dispose();
+						Conn.Dispose();
+					} catch (Exception ex) {
+						Console.WriteLine($"[SQLTranError] Dispose  {ex.Message}");
+						Console.WriteLine(ex.StackTrace);
+					}
+				}
+				IsDisposed = true;
+			}
+		}
+
+	}
 
 	//TODO: separate non-static connections for modules
 	/// <summary>Duomenų bazės pagalbininkas</summary>
 	public static class DB {
 		/// <summary>Prisijungimo tekstas</summary>
-		public static string ConnStr { private get; set; } = "User ID=postgres; Password=postgres; Server=localhost:5432; Database=master;";
+		public static string ConnStr { get; set; } = "User ID=postgres; Password=postgres; Server=localhost:5432; Database=master;";
 		/// <summary>Vykdyti užklausą</summary>
 		/// <param name="sql">Užklausa</param>
 		/// <returns>Paveiktų įrašų skaičius</returns>
@@ -22,16 +65,7 @@ namespace App {
 			var conn = new NpgsqlConnection(ConnStr); await conn.OpenAsync();
 			return await new NpgsqlCommand(sql, conn).ExecuteNonQueryAsync();
 		}
-		/// <summary>Duomenų skaitimas</summary>
-		/// <param name="sql">Užklausa</param>
-		/// <param name="param">Užklausos parametrai</param>
-		/// <returns>Npgsql duomenų skaitytuvas</returns>
-		public static async Task<NpgsqlDataReader> Read(string sql, Dictionary<string,object?>? param=null) {
-			var conn = new NpgsqlConnection(ConnStr); await conn.OpenAsync();
-			var command = new NpgsqlCommand(sql, conn);
-			if (param?.Count > 0) foreach (var p in param) command.Parameters.Add(new(p.Key,p.Value));
-			return await command.ExecuteReaderAsync();
-		}
+
 
 		//TODO: Clear COUNTS!!!
 		private static readonly Dictionary<string, int> Counts = [];
@@ -45,7 +79,8 @@ namespace App {
 			var qry = $"{table}{where}";
 			if (param?.Count > 0) foreach (var i in param) qry += i.Value?.ToString();
 			if (Counts.TryGetValue(qry, out var cnt)) return cnt;
-			using var rdr = await Read($"SELECT count(*) FROM {table}{where};", param);
+			using var db = new DBRead($"SELECT count(*) FROM {table}{where};", param);
+			using var rdr = await db.GetReader();
 			if(await rdr.ReadAsync()) return Counts[qry] = rdr.GetInt32(0);
 			return 0;
 		}
@@ -129,7 +164,8 @@ namespace App {
 			var ret = new DBPagingResponse<T>() {
 				Total = Total ? await DB.GetCount(Table, where, param) : 0, Page = Page
 			};
-			using var rdr = await DB.Read($"SELECT \"{string.Join("\",\"", Select)}\" FROM {Table} {where} ORDER By \"{Sort}\" {(Desc ? "Desc" : "Asc")} LIMIT {Limit} OFFSET {(Page - 1) * Limit}", param);
+			using var db = new DBRead($"SELECT \"{string.Join("\",\"", Select)}\" FROM {Table} {where} ORDER By \"{Sort}\" {(Desc ? "Desc" : "Asc")} LIMIT {Limit} OFFSET {(Page - 1) * Limit}", param);
+			using var rdr = await db.GetReader();
 
 
 			var cnt = rdr.FieldCount;
