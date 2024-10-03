@@ -27,8 +27,8 @@ namespace App {
 		/// <param name="param">Užklausos parametrai</param>
 		/// <returns>Npgsql duomenų skaitytuvas</returns>
 		public static async Task<NpgsqlDataReader> Read(string sql, Dictionary<string,object?>? param=null) {
-			using var conn = new NpgsqlConnection(ConnStr); await conn.OpenAsync();
-			using var command = new NpgsqlCommand(sql, conn);
+			var conn = new NpgsqlConnection(ConnStr); await conn.OpenAsync();
+			var command = new NpgsqlCommand(sql, conn);
 			if (param?.Count > 0) foreach (var p in param) command.Parameters.Add(new(p.Key,p.Value));
 			return await command.ExecuteReaderAsync();
 		}
