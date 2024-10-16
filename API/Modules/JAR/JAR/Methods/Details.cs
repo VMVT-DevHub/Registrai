@@ -14,7 +14,6 @@ namespace Modules.JAR.Methods;
 
 /// <summary>Juridinio asmens detalių gavimo metodas</summary>
 public static class JARDetails {
-	enum AdrType { adm, sav, sen, gyv, gat, aob, pat }
 
 	/// <summary>Detali juridinio asmens informacija</summary>
 	/// <param name="ctx"></param>

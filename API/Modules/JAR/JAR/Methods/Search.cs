@@ -6,7 +6,7 @@ using System.Text.Json.Serialization;
 
 namespace Modules.JAR.Methods;
 
-/// <summary>Adresų paieškos modelis</summary>
+/// <summary>Juridinių asmenų paieškos modelis</summary>
 public static class JARSearch {
     private static readonly int pagelimit = 50;
 
@@ -22,7 +22,7 @@ public static class JARSearch {
 	private static readonly List<string> SrhSelect2 = ["ID", "Pavad"];
 
 
-	/// <summary>Supaprastinta adresų paieška</summary>
+	/// <summary>Supaprastinta juridinių asmenų paieška</summary>
 	/// <param name="ctx"></param>
 	/// <param name="q">Paieškos užklausa</param>
 	/// <param name="top">Įrašų skaičius</param>
@@ -44,7 +44,7 @@ public static class JARSearch {
 		await ctx.Response.WriteAsJsonAsync(ret.Data);
 	}
 
-	/// <summary>Detali adresų paieška</summary>
+	/// <summary>Detali juridinių asmenų paieška</summary>
 	/// <param name="ctx"></param>
 	/// <param name="q">Paieškos užklausa</param>
 	/// <returns></returns>
