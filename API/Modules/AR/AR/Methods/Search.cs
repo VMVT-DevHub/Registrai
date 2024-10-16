@@ -1,8 +1,8 @@
-﻿using App;
+﻿using API;
 using App.Routing;
-using AR.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Modules.AR.Models;
 using Npgsql;
 using System;
 using System.Collections.Generic;
@@ -12,15 +12,16 @@ using System.Runtime.Intrinsics.Arm;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AR.Methods;
+namespace Modules.AR.Methods;
 
 /// <summary>Adresų paieškos modelis</summary>
-public static class Search {
+public static class ARSearch {
 	private static readonly int pagelimit = 50;
 
 	private static List<string>? CachedRemTypes { get; set; }
 	/// <summary>Paieškos frazių pašalinimo sąrašas</summary>
-	public static List<string> RemTypes { get {
+	public static List<string> RemTypes {
+		get {
 			//TODO: Reload CACHE!!!
 			if (CachedRemTypes is null) {
 				using var db = new DBRead("SELECT tipas FROM ar.v_app_types;");
@@ -28,15 +29,16 @@ public static class Search {
 				var ret = new List<string>(); while (rdr.Read()) ret.AddN(rdr.GetStringN(0)?.RemoveAccents().RemoveNonAlphanumeric(true)); CachedRemTypes = ret;
 			}
 			return CachedRemTypes;
-	} }
+		}
+	}
 
 
 
-	private static string? MkSerach(this string? q) => q?.RemoveAccents().RemoveNonAlphanumeric(true).ToLower().RemWords(AR.Methods.Search.RemTypes);
+	private static string? MkSerach(this string? q) => q?.RemoveAccents().RemoveNonAlphanumeric(true).ToLower().RemWords(RemTypes);
 
 
 	private static readonly List<string> SrhFields = ["ID", "Pavad", "Vietove", "Tipas", "Src", "Adm", "Sav", "Sen", "Gyv", "Gat", "Aob", "search", "sort"];
-	private static readonly List<string> SrhSelect = ["ID","Pavad","Vietove","Tipas"];
+	private static readonly List<string> SrhSelect = ["ID", "Pavad", "Vietove", "Tipas"];
 
 	/// <summary>Detali adresų paieška</summary>
 	/// <param name="ctx"></param>
@@ -44,8 +46,14 @@ public static class Search {
 	/// <returns></returns>
 	public static async Task FullSearch(HttpContext ctx, AR_SearchQuery q) {
 		var m = new DBPagingRequest<AR_SearchItem>("ar.v_app_search" + (q.Full ? "_full" : "")) {
-			Limit = q.Top?.Limit(pagelimit) ?? 10, Page = 1, Sort = "sort", Desc = true,
-			Fields = SrhFields, Select = SrhSelect, Search = MkSerach(q.Search), Total = false
+			Limit = q.Top?.Limit(pagelimit) ?? 10,
+			Page = 1,
+			Sort = "sort",
+			Desc = true,
+			Fields = SrhFields,
+			Select = SrhSelect,
+			Search = q.Search.MkSerach(),
+			Total = false
 		};
 		if (q.Filter is not null) {
 			var f = q.Filter;
@@ -92,7 +100,7 @@ public static class Search {
 	/// <param name="q">Paieškos frazė</param>
 	/// <param name="top">Duomenų ribojimas</param>
 	/// <returns></returns>
-	public static async Task Aob(HttpContext ctx, int gyv, string q, int top = 10) => await ctx.Response.WriteAsJsonAsync(await GetSrh(q, top, "aob",gyv));
+	public static async Task Aob(HttpContext ctx, int gyv, string q, int top = 10) => await ctx.Response.WriteAsJsonAsync(await GetSrh(q, top, "aob", gyv));
 	/// <summary>Adresų paieška (GAT+AOB+PAT)</summary>
 	/// <param name="ctx"></param>
 	/// <param name="gyv">Gyvenvietės kodas</param>
@@ -101,17 +109,31 @@ public static class Search {
 	/// <returns></returns>
 	public static async Task Adr(HttpContext ctx, int gyv, string q, int top = 10) {
 		var m = await new DBPagingRequest<AR_SearchItem>("ar.v_app_search_adr") {
-			Limit = top.Limit(pagelimit), Page = 1, Sort = "sort", Desc = true, Where = new() { Gyv = gyv },
-			Fields = SrhFields, Select = SrhSelect, Total = false, Search = MkSerach(q)
+			Limit = top.Limit(pagelimit),
+			Page = 1,
+			Sort = "sort",
+			Desc = true,
+			Where = new() { Gyv = gyv },
+			Fields = SrhFields,
+			Select = SrhSelect,
+			Total = false,
+			Search = q.MkSerach()
 		}.Execute();
-		await ctx.Response.WriteAsJsonAsync(new AR_Search() { Data = m.Data });
+		await ctx.Response.WriteAsJsonAsync(m.Data);
 	}
 
-	private static async Task<AR_Search> GetSrh(string q, int top, string src, int? gyv = null) {
+	private static async Task<List<AR_SearchItem>> GetSrh(string q, int top, string src, int? gyv = null) {
 		var ret = await new DBPagingRequest<AR_SearchItem>("ar.v_app_search") {
-			Limit = top.Limit(pagelimit), Page = 1, Sort = "sort", Desc = true, Where = new() { Src = src, Gyv = gyv },
-			Fields = SrhFields, Select = SrhSelect, Total = false, Search = MkSerach(q)
+			Limit = top.Limit(pagelimit),
+			Page = 1,
+			Sort = "sort",
+			Desc = true,
+			Where = new() { Src = src, Gyv = gyv },
+			Fields = SrhFields,
+			Select = SrhSelect,
+			Total = false,
+			Search = q.MkSerach()
 		}.Execute();
-		return new AR_Search() { Data = ret.Data };
+		return ret.Data;
 	}
 }

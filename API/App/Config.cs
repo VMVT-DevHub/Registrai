@@ -1,18 +1,25 @@
-using Registrai.App.Config;
+﻿using Registrai.App.Config;
 using System.Text.Json;
 
 namespace Registrai.App { 
 
+	/// <summary>Sistemos konfigūracija</summary>
 	public class Configuration : Config<ConfigData> { }
 	namespace Config {
-
+		/// <summary>Konfigūracijos duomenų modelis</summary>
 		public class ConfigData {
+			/// <summary>Duomenų bazės prisijungimo tekstas</summary>
 			public string ConnString { get; set; } = "User ID=postgres; Password=postgres; Server=localhost:5432; Database=master;";
+			/// <summary>Spausdinti klaidas konsolėje</summary>
 			public bool PrintOutput { get; set; } = true;
+			/// <summary>Saugoti klaidų įrašus faile</summary>
 			public bool LogFile { get; set; } = false;
 		}
 
+		/// <summary>Konfigūracijos modelis</summary>
+		/// <typeparam name="T"></typeparam>
 		public class Config<T>() where T : new() {
+			/// <summary>Reikalauti konfigūracinio failo</summary>
 			public bool RequireFile { get; set; } = true;
 			/// <summary>Configuration file</summary>
 			public string JsonFile { get; set; } = "appsettings.json";

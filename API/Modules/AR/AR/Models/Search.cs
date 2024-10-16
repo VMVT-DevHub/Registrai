@@ -1,14 +1,11 @@
 ﻿using App;
 using System.Text.Json.Serialization;
 
-namespace AR.Models;
+namespace Modules.AR.Models;
 
 
 /// <summary>Adresų paieškos rezultatas</summary>
-public class AR_Search { 
-	/// <summary>Paieškos rezultatai</summary>
-    public List<AR_SearchItem>? Data { get; set; }
-}
+public class AR_Search : List<AR_SearchItem> { }
 
 /// <summary>Adresų paieškos įrašo informacijos modelis</summary>
 public class AR_SearchItem {

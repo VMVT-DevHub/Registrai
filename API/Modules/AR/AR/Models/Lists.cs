@@ -1,6 +1,6 @@
-﻿using App;
+﻿using API;
 
-namespace AR.Models;
+namespace Modules.AR.Models;
 
 /// <summary>Adresų sąrašo rezultatas</summary>
 public class AR_List : DBPagingResponse<AR_ListItem> { }
@@ -80,6 +80,6 @@ public enum AR_ListTypes {
 /// <summary>Adresų registro filtro užklausa</summary>
 public class AR_ListQuery : DBPagingFilter<AR_ListFilter> {
 	/// <summary>Filtro tipas</summary>
-    public AR_ListTypes? Type { get; set; }
+	public AR_ListTypes? Type { get; set; }
 }
 

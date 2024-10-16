@@ -1,4 +1,4 @@
-﻿namespace AR.Models;
+﻿namespace Modules.AR.Models;
 
 /// <summary>Adresų registro įrašas</summary>
 public class AR_Item {
@@ -30,7 +30,7 @@ public class AR_Item {
 	public double[]? WGS { get; set; }
 
 	/// <summary>Apskrities detalės</summary>
-    public AR_ItemDetails? Adm { get; set; }
+	public AR_ItemDetails? Adm { get; set; }
 	/// <summary>Savivaldybės detalės</summary>
 	public AR_ItemDetails? Sav { get; set; }
 	/// <summary>Seniunijos detalės</summary>

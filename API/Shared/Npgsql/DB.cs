@@ -9,7 +9,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace App {
+namespace API {
 	/// <summary></summary>
 	public class DBRead : IDisposable {
 		private NpgsqlConnection Conn { get; }
@@ -25,7 +25,7 @@ namespace App {
 		/// <param name="sql"></param>
 		/// <param name="param"></param>
 		public DBRead(string sql, Dictionary<string, object?>? param = null) {
-			Conn = new NpgsqlConnection(App.DB.ConnStr);
+			Conn = new NpgsqlConnection(DB.ConnStr);
 			Cmd = new NpgsqlCommand(sql, Conn);
 			if (param?.Count > 0) foreach (var p in param) Cmd.Parameters.Add(new(p.Key, p.Value));
 		}
@@ -75,13 +75,13 @@ namespace App {
 		/// <param name="where">WHERE sąlyga</param>
 		/// <param name="param">Užklausos parametrai</param>
 		/// <returns>Įrašų skaičius</returns>
-		public static async Task<int> GetCount(string table, string? where, Dictionary<string, object?>? param=null) {
+		public static async Task<int> GetCount(string table, string? where, Dictionary<string, object?>? param = null) {
 			var qry = $"{table}{where}";
 			if (param?.Count > 0) foreach (var i in param) qry += i.Value?.ToString();
 			if (Counts.TryGetValue(qry, out var cnt)) return cnt;
 			using var db = new DBRead($"SELECT count(*) FROM {table}{where};", param);
 			using var rdr = await db.GetReader();
-			if(await rdr.ReadAsync()) return Counts[qry] = rdr.GetInt32(0);
+			if (await rdr.ReadAsync()) return Counts[qry] = rdr.GetInt32(0);
 			return 0;
 		}
 	}
@@ -99,13 +99,13 @@ namespace App {
 		/// <example>ID</example>
 		public string Order { get; set; } = "ID";
 		/// <summary>Paeiškos frazė</summary>
-        public string? Search { get; set; }
-        /// <summary>Rikiavimo tvarka</summary>
-        /// <example>false</example>
-        public bool Desc { get; set; }
+		public string? Search { get; set; }
+		/// <summary>Rikiavimo tvarka</summary>
+		/// <example>false</example>
+		public bool Desc { get; set; }
 		/// <summary>Filtras</summary>
-        public T? Filter { get; set; }
-    }
+		public T? Filter { get; set; }
+	}
 	/// <summary>Duomenų puslapiavimo užklausa</summary>
 	/// <typeparam name="T"></typeparam>
 	/// <remarks>Puslapiavimo užklausos konstruktorius</remarks>
@@ -122,13 +122,13 @@ namespace App {
 		/// <summary>Puslapis</summary>
 		public int Page { get; set; } = 1;
 		/// <summary>Rikiavimas</summary>
-		public string Sort { get; set; } = "ID";
+		public string? Sort { get; set; } = "ID";
 		/// <summary>Rodomi duomenų laukai</summary>
 		public List<string>? Select { get; set; }
 		/// <summary>Duomenų lentelės laukai</summary>
 		public List<string>? Fields { get; set; }
-        /// <summary>Didėjančia tvarka</summary>
-        public bool Desc { get; set; }
+		/// <summary>Didėjančia tvarka</summary>
+		public bool Desc { get; set; }
 		/// <summary>Get total number of rows</summary>
 		public bool Total { get; set; } = true;
 		/// <summary>Vykdyti užklausą</summary>
@@ -136,7 +136,7 @@ namespace App {
 		public async Task<DBPagingResponse<T>> Execute() {
 			if (Fields is null) { throw new Exception("Missing data fields"); }
 			if (Select is null) { throw new Exception("Missing select fields"); }
-			if (!Fields.Contains(Sort)) { throw new Exception("Sort not valid"); }
+			if (Sort is not null && !Fields.Contains(Sort)) { throw new Exception("Sort not valid"); }
 
 			string where = ""; var param = new Dictionary<string, object?>();
 			var whr = new List<string>();
@@ -164,7 +164,7 @@ namespace App {
 			var ret = new DBPagingResponse<T>() {
 				Total = Total ? await DB.GetCount(Table, where, param) : 0, Page = Page
 			};
-			using var db = new DBRead($"SELECT \"{string.Join("\",\"", Select)}\" FROM {Table} {where} ORDER By \"{Sort}\" {(Desc ? "Desc" : "Asc")} LIMIT {Limit} OFFSET {(Page - 1) * Limit}", param);
+			using var db = new DBRead($"SELECT \"{string.Join("\",\"", Select)}\" FROM {Table} {where} {(Sort is null ? "" : $"ORDER By \"{Sort}\" {(Desc ? "Desc" : "Asc")}")} LIMIT {Limit} OFFSET {(Page - 1) * Limit}", param);
 			using var rdr = await db.GetReader();
 
 
@@ -190,7 +190,7 @@ namespace App {
 				//TODO: Sleep;
 				ret.Data.Add(t);
 			}
-			if(!Total) { ret.Total = ret.Data.Count; }
+			if (!Total) { ret.Total = ret.Data.Count; }
 			return ret;
 		}
 	}
@@ -208,6 +208,9 @@ namespace App {
 		/// <summary>Gauti skaitinę reikšmę</summary>
 		/// <param name="rdr"></param><param name="id"></param><returns></returns>
 		public static long? GetLongN(this NpgsqlDataReader rdr, int id) => !rdr.IsDBNull(id) ? rdr.GetInt64(id) : null;
+		/// <summary>Gauti datos reikšmę</summary>
+		/// <param name="rdr"></param><param name="id"></param><returns></returns>
+		public static DateOnly? GetDateOnlyN(this NpgsqlDataReader rdr, int id) => !rdr.IsDBNull(id) ? DateOnly.FromDateTime(rdr.GetDateTime(id)) : null;
 	}
 
 	/// <summary>Duomenų puslapiavimo užklausa</summary>
@@ -224,6 +227,6 @@ namespace App {
 		public int Page { get; set; }
 		/// <summary>Duomenys</summary>
 		public List<T> Data { get; set; } = [];
-    }
+	}
 
 }

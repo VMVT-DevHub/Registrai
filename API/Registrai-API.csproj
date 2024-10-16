@@ -24,6 +24,7 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="Modules\AR\AR.csproj" />
+	  <ProjectReference Include="Modules\JAR\JAR.csproj" />
 	  <ProjectReference Include="Shared\Npgsql\Npgsql.csproj" />
 	  <ProjectReference Include="Shared\Routing\Routing.csproj" />
 	</ItemGroup>
