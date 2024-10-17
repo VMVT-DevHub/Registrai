@@ -15,7 +15,7 @@ public static class JARSearch {
     /// <summary>Paieškos frazių pašalinimo sąrašas</summary>
     public static List<string> RemTypes => CachedRemTypes;
 
-    private static string? MkSerach(this string? q) => q?.RemoveAccents().RemoveNonAlphanumeric(true).ToLower().RemWords(RemTypes);
+	private static string? MkSerach(this string? q) => q?.RemoveAccents().RemoveNonAlphanumeric(true).ToLower().RemWords(RemTypes);
 
 
     private static readonly List<string> SrhFields = ["ID", "Pavad", "Adresas", "Statusas", "Forma", "AobKodas", "FormKodas", "StatusKodas", "Active", "search", "sort"];
@@ -32,15 +32,20 @@ public static class JARSearch {
 	/// <param name="active">Tik aktyvūs juridiniai asmenys</param>
 	/// <returns></returns>
 	public static async Task GetSrh(HttpContext ctx, string q, int top=10, bool? details=false, bool? active=false, int? status=null) {
-		var ret = await new DBPagingRequest<JAR_SearchItem>("jar.v_app_search") {
+		var srt = false;
+		if (q.Length > 6 && long.TryParse(q, out var num) && num > 1e5) { srt = true; q = num.ToString(); }
+		else { q = q.MkSerach() ?? ""; }
+
+		var ret = await new DBPagingRequest<JAR_SearchItem>("jar.v_app_search_" + (srt ? "id" : "name")) {
 			Limit = top.Limit(pagelimit),
 			Page = 1,
+			StartsWith = srt,
 			Sort = "sort",
 			Where = new() { StatusKodas = status, Active = active ?? true ? true : null },
 			Fields = SrhFields,
 			Select = details ?? true ? SrhSelect1 : SrhSelect2,
 			Total = false,
-			Search = q.MkSerach()
+			Search = q
 		}.Execute();
 
 		await ctx.Response.WriteAsJsonAsync(ret.Data);
@@ -51,13 +56,17 @@ public static class JARSearch {
 	/// <param name="q">Paieškos užklausa</param>
 	/// <returns></returns>
 	public static async Task FullSearch(HttpContext ctx, JAR_SearchQuery q) {
-		var m = new DBPagingRequest<JAR_SearchItem>("jar.v_app_search") {
+		var srt = false; var qs = q.Search;
+		if (qs?.Length > 6 && long.TryParse(q.Search, out var num) && num > 1e5) { srt = true; qs = num.ToString(); }
+		else { qs = qs.MkSerach() ?? ""; }
+
+		var m = new DBPagingRequest<JAR_SearchItem>("jar.v_app_search_" + (srt ? "id" : "name")) {
 			Limit = q.Top?.Limit(pagelimit) ?? 10,
 			Page = 1,
 			Sort = "sort",
 			Fields = SrhFields,
 			Select = q.Detales ?? true ? SrhSelect1 : SrhSelect2,
-			Search = q.Search.MkSerach(),
+			Search = qs,
 			Total = false
 		};
 

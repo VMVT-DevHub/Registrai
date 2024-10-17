@@ -117,6 +117,8 @@ namespace API {
 		public T? Where { get; set; }
 		/// <summary>Paieškos laukas</summary>
 		public string? Search { get; set; }
+		/// <summary>Paieška prasideda fraze</summary>
+		public bool StartsWith { get; set; }
 		/// <summary>Puslapio dydis</summary>
 		public int Limit { get; set; } = 50;
 		/// <summary>Puslapis</summary>
@@ -153,10 +155,13 @@ namespace API {
 			}
 			if (!string.IsNullOrWhiteSpace(Search)) {
 				if (!Fields.Contains("search")) { throw new Exception("Search not available"); }
-				var sr = Search.Split(" ");
-				for (var i = 0; i < sr.Length; i++) {
-					whr.Add($"search like '%'||@q{i}||'%'");
-					param[$"@q{i}"] = sr[i];
+				if (StartsWith) { whr.Add($"search like @qs||'%'"); param[$"@qs"] = Search; }
+				else {
+					var sr = Search.Split(" ");
+					for (var i = 0; i < sr.Length; i++) {
+						whr.Add($"search like '%'||@q{i}||'%'");
+						param[$"@q{i}"] = sr[i];
+					}
 				}
 			}
 			if (whr.Count > 0) where = $" WHERE {string.Join(" and ", whr)} ";
