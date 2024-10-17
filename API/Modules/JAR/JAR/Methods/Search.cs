@@ -2,6 +2,7 @@
 using App.Routing;
 using Microsoft.AspNetCore.Http;
 using Modules.JAR.Models;
+using System;
 using System.Text.Json.Serialization;
 
 namespace Modules.JAR.Methods;
@@ -17,7 +18,7 @@ public static class JARSearch {
     private static string? MkSerach(this string? q) => q?.RemoveAccents().RemoveNonAlphanumeric(true).ToLower().RemWords(RemTypes);
 
 
-    private static readonly List<string> SrhFields = ["ID", "Pavad", "Adresas", "Statusas", "Forma", "AobKodas", "FormKodas", "StatusKodas", "search", "sort"];
+    private static readonly List<string> SrhFields = ["ID", "Pavad", "Adresas", "Statusas", "Forma", "AobKodas", "FormKodas", "StatusKodas", "Active", "search", "sort"];
 	private static readonly List<string> SrhSelect1 = ["ID", "Pavad", "Adresas", "Statusas", "Forma"];
 	private static readonly List<string> SrhSelect2 = ["ID", "Pavad"];
 
@@ -28,13 +29,14 @@ public static class JARSearch {
 	/// <param name="top">Įrašų skaičius</param>
 	/// <param name="status">Statuso kodo filtravimas</param>
 	/// <param name="details">Rodyti daugiau informacijos</param>
+	/// <param name="active">Tik aktyvūs juridiniai asmenys</param>
 	/// <returns></returns>
-	public static async Task GetSrh(HttpContext ctx, string q, int top=10, bool? details=false, int? status=null) {
+	public static async Task GetSrh(HttpContext ctx, string q, int top=10, bool? details=false, bool? active=false, int? status=null) {
 		var ret = await new DBPagingRequest<JAR_SearchItem>("jar.v_app_search") {
 			Limit = top.Limit(pagelimit),
 			Page = 1,
 			Sort = "sort",
-			Where = status is null ? null : new() { StatusKodas = status },
+			Where = new() { StatusKodas = status, Active = active ?? true ? true : null },
 			Fields = SrhFields,
 			Select = details ?? true ? SrhSelect1 : SrhSelect2,
 			Total = false,
@@ -59,10 +61,12 @@ public static class JARSearch {
 			Total = false
 		};
 
+
 		if (q.Filter is not null) {
 			var f = q.Filter;
 			m.Where = new() { AobKodas = f.AobKodas, FormKodas = f.FormKodas, StatusKodas = f.StatusKodas };
 		}
+		if (q.Active == true) (m.Where ??= new()).Active = true;
 
 		var ret = await m.Execute();
 		await ctx.Response.WriteAsJsonAsync(ret.Data);

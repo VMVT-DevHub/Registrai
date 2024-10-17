@@ -21,7 +21,6 @@ namespace Modules
 
 			return app;
 		}
-
 	}
 
 }

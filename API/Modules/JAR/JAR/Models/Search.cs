@@ -25,6 +25,8 @@ public class JAR_SearchItem {
 	[JsonIgnore] public int? FormKodas { get; set; }
 	/// <summary>Juridinio asmens statuso kodas</summary>
 	[JsonIgnore] public int? StatusKodas { get; set; }
+	/// <summary>Tik aktyvūs juridiniai asmenys</summary>
+	[JsonIgnore] public bool? Active { get; set; }
 }
 
 
@@ -49,9 +51,12 @@ public class JAR_SearchQuery {
 	/// <summary>Rodyti daugiau informacijos</summary>
 	/// <example>false</example>
 	public bool? Detales { get; set; } = false;
-    /// <summary>Gaunamų įrašų skaičius (max 50)</summary>
-    /// <example>10</example>
-    public int? Top { get; set; } = 10;
+	/// <summary>Rodyti tik aktyvius</summary>
+	/// <example>false</example>
+	public bool? Active { get; set; } = false;
+	/// <summary>Gaunamų įrašų skaičius (max 50)</summary>
+	/// <example>10</example>
+	public int? Top { get; set; } = 10;
 
 	/// <summary>Paieškos filtras</summary>
 	public JAR_SearchFilter? Filter { get; set; }
