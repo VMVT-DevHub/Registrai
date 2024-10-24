@@ -42,13 +42,20 @@ CREATE INDEX jar_v_app_data_search_idx ON jar.v_app_data USING gin(srh1 gin_trgm
 
 
 
+/*
 
+-- pridedamas REFRESH MATERIALIZED VIEW jar.v_app_data;
 
+CREATE OR REPLACE FUNCTION jar.data_load()
+	RETURNS TABLE(id bigint, source character varying, "table" character varying, status boolean, items bigint, duration integer, inserted integer, updated integer, deleted integer) LANGUAGE 'plpgsql' AS $BODY$
+	DECLARE imp timestamp(3)=timezone('utc'::text, now()); strt timestamp; ins integer; upd integer; del integer; lst varchar(255)[][]; BEGIN
+	strt:=clock_timestamp(); SELECT e.ins,e.upd,e.del,clock_timestamp() FROM jar.load_jar() e INTO ins,upd,del;
+	INSERT INTO jar.log_import (log_date,log_source,log_table,log_status,log_items,log_duration,log_data_ins,log_data_upd,log_data_del) 
+	  VALUES (imp,'load_jar','data',true,ins+upd+del,EXTRACT(milliseconds FROM age(clock_timestamp(),strt)),ins,upd,del); 
+	REFRESH MATERIALIZED VIEW jar.v_app_data;
+	RETURN QUERY SELECT log_id, log_source, log_table, log_status, log_items, log_duration, log_data_ins,log_data_upd,log_data_del FROM jar.log_import WHERE log_date = imp; END; $BODY$;
 
-
-
-
-
+*/
 
 
 
