@@ -159,8 +159,12 @@ namespace API {
 				else {
 					var sr = Search.Split(" ");
 					for (var i = 0; i < sr.Length; i++) {
-						var j = sr[i]; if (int.TryParse(j, out _)) j = " " + j; //Jeigu paieškos žodis numeris - pridėti tarpą pradžioje
-						whr.Add($"search like '%'||@q{i}||'%'");
+						var j = sr[i]; if (int.TryParse(j, out var k)) j = " " + j; //Jeigu paieškos žodis numeris - pridėti tarpą pradžioje
+
+						if (k > 0 && k < 10 && (i + 1) == sr.Length)
+							whr.Add($"search like '%'||@q{i}"); //paskutinis numeris						
+						else
+							whr.Add($"search like '%'||@q{i}||'%'");
 						param[$"@q{i}"] = j;
 					}
 				}
