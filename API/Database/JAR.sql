@@ -1,5 +1,5 @@
 ﻿
--- CREATE EXTENSION pg_trgm; CREATE EXTENSION unaccent SCHEMA jar;
+-- CREATE EXTENSION pg_trgm; CREATE EXTENSION unaccent;
 
 SET SESSION AUTHORIZATION "_master_admin";
 
@@ -11,7 +11,7 @@ DROP MATERIALIZED VIEW IF EXISTS jar.v_app_data;
 CREATE MATERIALIZED VIEW jar.v_app_data AS
 	SELECT ja_kodas, ja_pavadinimas, adresas, aob_kodas, form_kodas, form_pavadinimas, 
 		status_kodas, stat_pavadinimas, stat_data, reg_data, aob_data, isreg_data, formavimo_data, status_kodas<>10 aktyvus,
-		REPLACE(REPLACE(ar.unaccent(lower(ja_pavadinimas)),'"',''),',','') srh1, ja_kodas::varchar(30) srh2,
+		REPLACE(REPLACE(.unaccent(lower(ja_pavadinimas)),'"',''),',','') srh1, ja_kodas::varchar(30) srh2,
 		60-CAST(TO_CHAR(COALESCE(aob_data,stat_data)+INTERVAL '20 years', 'YYMMDD') AS INTEGER)/10000
 		+30+CASE WHEN status_kodas=10 THEN 31 ELSE status_kodas END 
 		+CASE WHEN aob_kodas is null THEN 0 ELSE -30 END as sort

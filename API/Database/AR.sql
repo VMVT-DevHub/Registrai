@@ -1,5 +1,5 @@
 ﻿
---CREATE EXTENSION pg_trgm; CREATE EXTENSION unaccent SCHEMA ar;
+--CREATE EXTENSION pg_trgm; CREATE EXTENSION unaccent SCHEMA;
 
 
 
