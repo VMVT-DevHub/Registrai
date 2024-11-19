@@ -162,7 +162,7 @@ namespace API {
 						var j = sr[i]; if (int.TryParse(j, out var k)) j = " " + j; //Jeigu paieškos žodis numeris - pridėti tarpą pradžioje
 
 						if (k > 0 && k < 10 && (i + 1) == sr.Length)
-							whr.Add($"search like '%'||@q{i}||'_'"); //paskutinis numeris
+							whr.Add($"search like '%'||@q{i}||'_%'"); //paskutinis numeris
 						else
 							whr.Add($"search like '%'||@q{i}||'%'");
 						param[$"@q{i}"] = j;
