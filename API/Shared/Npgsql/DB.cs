@@ -7,7 +7,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
+using static Npgsql.PostgresTypes.PostgresCompositeType;
 
 namespace API {
 	/// <summary></summary>
@@ -27,7 +30,17 @@ namespace API {
 		public DBRead(string sql, Dictionary<string, object?>? param = null) {
 			Conn = new NpgsqlConnection(DB.ConnStr);
 			Cmd = new NpgsqlCommand(sql, Conn);
-			if (param?.Count > 0) foreach (var p in param) Cmd.Parameters.Add(new(p.Key, p.Value));
+			if (param?.Count > 0) {
+				foreach (var p in param) Cmd.Parameters.Add(new(p.Key, p.Value));
+				if (DB.Debug) {
+					var inc = DB.DebugIncr++;
+					Console.WriteLine($"[SQL{inc}]: {sql}");
+					Console.WriteLine($"[SQL{inc}]: {JsonSerializer.Serialize(param)}");
+				}
+			}
+			else if (DB.Debug) {
+				Console.WriteLine($"[SQL{DB.DebugIncr++}]: {sql}");
+			}
 		}
 
 		// To detect redundant calls
@@ -56,6 +69,11 @@ namespace API {
 	//TODO: separate non-static connections for modules
 	/// <summary>Duomenų bazės pagalbininkas</summary>
 	public static class DB {
+		/// <summary>Print query to console</summary>
+		public static bool Debug { get; set; }
+		/// <summary>Print query numbering</summary>
+		public static long DebugIncr { get; set; }
+
 		/// <summary>Prisijungimo tekstas</summary>
 		public static string ConnStr { get; set; } = "User ID=postgres; Password=postgres; Server=localhost:5432; Database=master;";
 		/// <summary>Vykdyti užklausą</summary>
@@ -139,6 +157,7 @@ namespace API {
 			if (Fields is null) { throw new Exception("Missing data fields"); }
 			if (Select is null) { throw new Exception("Missing select fields"); }
 			if (Sort is not null && !Fields.Contains(Sort)) { throw new Exception("Sort not valid"); }
+			var srt = $"\"{Sort}\"";
 
 			string where = ""; var param = new Dictionary<string, object?>();
 			var whr = new List<string>();
@@ -157,24 +176,15 @@ namespace API {
 				if (!Fields.Contains("search")) { throw new Exception("Search not available"); }
 				if (StartsWith) { whr.Add($"search like @qs||'%'"); param[$"@qs"] = Search; }
 				else {
-					var sr = Search.Split(" ");
-					for (var i = 0; i < sr.Length; i++) {
-						var j = sr[i]; if (int.TryParse(j, out var k)) j = " " + j; //Jeigu paieškos žodis numeris - pridėti tarpą pradžioje
-
-						if (k > 0 && k < 10 && (i + 1) == sr.Length)
-							whr.Add($"(search like '%'||@q{i} or search like '%'||@q{i}||'_')"); //paskutinis numeris
-						else
-							whr.Add($"search like '%'||@q{i}||'%'");
-						param[$"@q{i}"] = j;
-					}
+					whr.Add($"similarity(search,@srhq)>0.5");
+					param["@srhq"] = Search;
+					srt = $"similarity(search,@srhq) desc" + (srt is null ? "" : "," + srt);
 				}
 			}
 			if (whr.Count > 0) where = $" WHERE {string.Join(" and ", whr)} ";
 
-			var ret = new DBPagingResponse<T>() {
-				Total = Total ? await DB.GetCount(Table, where, param) : 0, Page = Page
-			};
-			using var db = new DBRead($"SELECT \"{string.Join("\",\"", Select)}\" FROM {Table} {where} {(Sort is null ? "" : $"ORDER By \"{Sort}\" {(Desc ? "Desc" : "Asc")}")} LIMIT {Limit} OFFSET {(Page - 1) * Limit}", param);
+			var ret = new DBPagingResponse<T>() { Total = Total ? await DB.GetCount(Table, where, param) : 0, Page = Page };
+			using var db = new DBRead($"SELECT \"{string.Join("\",\"", Select)}\" FROM {Table} {where} {(srt is null ? "" : $"ORDER By {srt} {(Desc ? "Desc" : "Asc")}")} LIMIT {Limit} OFFSET {(Page - 1) * Limit}", param);
 			using var rdr = await db.GetReader();
 
 
@@ -204,7 +214,6 @@ namespace API {
 			return ret;
 		}
 	}
-
 
 
 	/// <summary>Plėtiniai</summary>

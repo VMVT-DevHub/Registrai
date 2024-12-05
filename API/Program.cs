@@ -10,7 +10,7 @@ var app = Startup.Build(args);
 var cfg = new Configuration();
 
 DB.ConnStr = cfg.Data.ConnString;
-
+DB.Debug = cfg.Data.Debug;
 
 
 app.UseAdresuRegistras();

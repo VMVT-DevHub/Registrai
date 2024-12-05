@@ -12,6 +12,8 @@ namespace Registrai.App {
 			public string ConnString { get; set; } = "User ID=postgres; Password=postgres; Server=localhost:5432; Database=master;";
 			/// <summary>Spausdinti klaidas konsolėje</summary>
 			public bool PrintOutput { get; set; } = true;
+			/// <summary>Spausdinti klaidas konsolėje</summary>
+			public bool Debug { get; set; } = true;
 			/// <summary>Saugoti klaidų įrašus faile</summary>
 			public bool LogFile { get; set; } = false;
 		}

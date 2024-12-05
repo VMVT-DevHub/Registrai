@@ -1,7 +1,7 @@
 ﻿
 --CREATE EXTENSION pg_trgm; CREATE EXTENSION unaccent SCHEMA;
 
-
+SET SESSION AUTHORIZATION "postgres";
 
 DROP VIEW IF EXISTS ar.v_app_1_apskritys;
 DROP VIEW IF EXISTS ar.v_app_2_savivaldybes;
@@ -14,12 +14,22 @@ DROP VIEW IF EXISTS ar.v_app_search;
 DROP VIEW IF EXISTS ar.v_app_search_full;
 DROP VIEW IF EXISTS ar.v_app_search_adr;
 DROP VIEW IF EXISTS ar.v_app_detales;
+DROP VIEW IF EXISTS ar.v_app_types;
+
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA ar TO "_master_admin";
+DO $$ DECLARE tbl RECORD; BEGIN FOR tbl IN SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname = 'ar' 
+LOOP EXECUTE 'ALTER TABLE ar.' || quote_ident(tbl.tablename) || ' OWNER TO "_master_admin"'; END LOOP; END $$; 
+
+SET SESSION AUTHORIZATION "_master_admin";
 
 
 DROP MATERIALIZED VIEW IF EXISTS ar.v_app_data;
 CREATE MATERIALIZED VIEW ar.v_app_data AS
 	WITH dt as (
-		SELECT d.id, d.src, CASE WHEN d.src not in ('pat','aob') THEN CONCAT(d.vardas_k, ' ' || d.kita) END as vardas, d.reg_data,
+		SELECT d.id, d.src, CASE d.src
+				WHEN 'pat'::bpchar THEN concat(COALESCE(gat.vardas_k, gyv.vardas_k), ' ' || aob.nr, ' K' || aob.korpuso_nr, '-' || CASE WHEN d.src = 'pat' THEN d.vardas_k ELSE null END)
+				WHEN 'aob'::bpchar THEN concat(COALESCE(gat.vardas_k, gyv.vardas_k), ' ' || aob.nr, ' K' || aob.korpuso_nr)
+				ELSE concat(d.vardas_k, ' '::text || d.kita::text) END AS vardas, d.reg_data,
 			CASE d.src WHEN 'pat' THEN 'patalpa' WHEN 'aob' THEN 'adresas' WHEN 'gat' THEN 'gatvė' WHEN 'gyv' THEN 'gyvenvietė' 
 				WHEN 'sen' THEN 'seniūnija' WHEN 'sav' THEN 'savivaldybė' WHEN 'adm' THEN 'apskritis' END AS tipas,
 			adm.adm_kodas, adm.vardas_k AS adm_vardas, adm.tipas AS adm_tipas, adm.tipo_santrumpa AS adm_trump,
@@ -107,7 +117,7 @@ CREATE VIEW ar.v_app_5_gatves AS SELECT id "ID", pavad "Pavad", vietove "Vietove
 CREATE VIEW ar.v_app_6_adresai AS SELECT id "ID", pavad "Pavad", vietove "Vietove", adm_kodas "Adm", sav_kodas "Sav", sen_kodas "Sen", gyv_kodas "Gyv", gat_kodas "Gat", aob_nr "Nr", aob_korpusas as "Korp", aob_post as "Post", aob_cnt "Chc", reg_data "RegData", srh1 as search FROM ar.v_app_data WHERE src='aob';
 CREATE VIEW ar.v_app_7_patalpos AS SELECT id "ID", pavad "Pavad", vietove "Vietove", adm_kodas "Adm", sav_kodas "Sav", sen_kodas "Sen", gyv_kodas "Gyv", gat_kodas "Gat", aob_kodas "Aob", aob_patalpa "Pat", aob_post as "Post", reg_data "RegData", srh1 as search FROM ar.v_app_data WHERE src='pat';
 
-
+CREATE VIEW ar.v_app_types AS SELECT DISTINCT tipas FROM (SELECT data.tipas FROM ar.data UNION SELECT data.tipo_santrumpa FROM ar.data) WHERE tipas IS NOT NULL;
 CREATE VIEW ar.v_app_search AS SELECT id "ID",pavad "Pavad",vietove "Vietove",tipas "Tipas",src "Src",adm_kodas "Adm",sav_kodas "Sav",sen_kodas "Sen",gyv_kodas "Gyv",gat_kodas "Gat",aob_kodas "Aob",srh1 search,sort FROM ar.v_app_data; 
 CREATE VIEW ar.v_app_search_full AS SELECT id "ID",pavad "Pavad",vietove "Vietove",tipas "Tipas",src "Src",adm_kodas "Adm",sav_kodas "Sav",sen_kodas "Sen",gyv_kodas "Gyv",gat_kodas "Gat",aob_kodas "Aob",srh2 search,sort FROM ar.v_app_data;
 CREATE VIEW ar.v_app_search_adr AS SELECT id "ID",pavad "Pavad",vietove "Vietove",tipas "Tipas", adm_kodas "Adm",sav_kodas "Sav",sen_kodas "Sen",gyv_kodas "Gyv",gat_kodas "Gat",aob_kodas "Aob",
@@ -118,3 +128,25 @@ CREATE VIEW ar.v_app_detales AS SELECT id, src, pavad, vietove, tipas, reg_data,
 	gyv_kodas, gyv_vardas, gyv_pavad, gyv_tipas, gyv_trump, gyv_cnt, gyv_mis, gat_kodas, gat_vardas, gat_tipas, gat_trump, gat_cnt, 
 	aob_kodas, aob_cnt, aob_nr, aob_korpusas, aob_patalpa, aob_post, aob_lks, aob_wgs FROM ar.v_app_data;
 
+
+GRANT SELECT ON ALL TABLES IN SCHEMA ar TO "registrai_app";
+
+/*
+
+-- pridedamas REFRESH MATERIALIZED VIEW ar.v_app_data;
+
+CREATE OR REPLACE FUNCTION ar.data_load() RETURNS TABLE(id bigint, source varchar, "table" varchar, status bool, items bigint, duration int, inserted int, updated int, deleted int) LANGUAGE 'plpgsql' SECURITY DEFINER AS $BODY$ 
+   DECLARE imp timestamp(3)=timezone('utc'::text, now()); strt timestamp; ins int; upd int; del int; lst varchar(255)[][]; BEGIN
+   strt:=clock_timestamp(); SELECT e.ins,e.upd,e.del,clock_timestamp() FROM ar.load_1_apskritys() e INTO ins,upd,del; INSERT INTO ar.log_import (log_date,log_type,log_source,log_table,log_status,log_items,log_duration,log_data_ins,log_data_upd,log_data_del) VALUES (imp,'load','apskritys','adr_1_apskritys',true,ins+upd+del,EXTRACT(milliseconds FROM age(clock_timestamp(),strt)),ins,upd,del);
+   strt:=clock_timestamp(); SELECT e.ins,e.upd,e.del,clock_timestamp() FROM ar.load_2_savivaldybes() e INTO ins,upd,del; INSERT INTO ar.log_import (log_date,log_type,log_source,log_table,log_status,log_items,log_duration,log_data_ins,log_data_upd,log_data_del) VALUES (imp,'load','savivaldybes','adr_2_savivaldybes',true,ins+upd+del,EXTRACT(milliseconds FROM age(clock_timestamp(),strt)),ins,upd,del);
+   strt:=clock_timestamp(); SELECT e.ins,e.upd,e.del,clock_timestamp() FROM ar.load_3_seniunijos() e INTO ins,upd,del; INSERT INTO ar.log_import (log_date,log_type,log_source,log_table,log_status,log_items,log_duration,log_data_ins,log_data_upd,log_data_del) VALUES (imp,'load','seniunijos','adr_3_seniunijos',true,ins+upd+del,EXTRACT(milliseconds FROM age(clock_timestamp(),strt)),ins,upd,del);
+   strt:=clock_timestamp(); SELECT e.ins,e.upd,e.del,clock_timestamp() FROM ar.load_4_gyvenvietes() e INTO ins,upd,del; INSERT INTO ar.log_import (log_date,log_type,log_source,log_table,log_status,log_items,log_duration,log_data_ins,log_data_upd,log_data_del) VALUES (imp,'load','gyvenvietes','adr_4_gyvenvietes',true,ins+upd+del,EXTRACT(milliseconds FROM age(clock_timestamp(),strt)),ins,upd,del);
+   strt:=clock_timestamp(); SELECT e.ins,e.upd,e.del,clock_timestamp() FROM ar.load_5_gatves() e INTO ins,upd,del; INSERT INTO ar.log_import (log_date,log_type,log_source,log_table,log_status,log_items,log_duration,log_data_ins,log_data_upd,log_data_del) VALUES (imp,'load','gatves','adr_5_gatves',true,ins+upd+del,EXTRACT(milliseconds FROM age(clock_timestamp(),strt)),ins,upd,del);
+   strt:=clock_timestamp(); SELECT e.ins,e.upd,e.del,clock_timestamp() FROM ar.load_6_adresai() e INTO ins,upd,del; INSERT INTO ar.log_import (log_date,log_type,log_source,log_table,log_status,log_items,log_duration,log_data_ins,log_data_upd,log_data_del) VALUES (imp,'load','adresai','adr_6_adresai',true,ins+upd+del,EXTRACT(milliseconds FROM age(clock_timestamp(),strt)),ins,upd,del);
+   strt:=clock_timestamp(); SELECT e.ins,e.upd,e.del,clock_timestamp() FROM ar.load_7_patalpos() e INTO ins,upd,del; INSERT INTO ar.log_import (log_date,log_type,log_source,log_table,log_status,log_items,log_duration,log_data_ins,log_data_upd,log_data_del) VALUES (imp,'load','patalpos','adr_7_patalpos',true,ins+upd+del,EXTRACT(milliseconds FROM age(clock_timestamp(),strt)),ins,upd,del);
+   strt:=clock_timestamp(); SELECT e.ins,e.upd,e.del,clock_timestamp() FROM ar.load_8_data() e INTO ins,upd,del; INSERT INTO ar.log_import (log_date,log_type,log_source,log_table,log_status,log_items,log_duration,log_data_ins,log_data_upd,log_data_del) VALUES (imp,'load','data','data',true,ins+upd+del,EXTRACT(milliseconds FROM age(clock_timestamp(),strt)),ins,upd,del);
+   REFRESH MATERIALIZED VIEW ar.v_app_data;
+   RETURN QUERY SELECT log_id, log_source, log_table, log_status, log_items, log_duration, log_data_ins,log_data_upd,log_data_del FROM ar.log_import WHERE log_date = imp; END; 
+$BODY$;
+
+*/
