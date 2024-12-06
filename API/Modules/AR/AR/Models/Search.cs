@@ -1,7 +1,7 @@
 ﻿using App;
 using System.Text.Json.Serialization;
 
-namespace Modules.AR.Models;
+namespace Registrai.Modules.AR.Models;
 
 
 /// <summary>Adresų paieškos rezultatas</summary>

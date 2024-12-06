@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using System.Runtime.CompilerServices;
-namespace App.Routing;
+﻿namespace App.Routing;
 
 
 /// <summary>Klaidos standartinis modelis</summary>
@@ -47,7 +45,7 @@ public class ErrorB : Error {
 
 	/// <summary>Klaidos informacija</summary>
 	/// <example>Validacijos informacija</example>
-	public virtual List<string> Details { get; set; } = new();
+	public virtual List<string> Details { get; set; } = [];
 }
 
 
@@ -122,7 +120,7 @@ public class E422 : ErrorB {
 	public string Message { get; set; } = "Duomenų validacijos klaida";
 	/// <summary>Klaidos informacija</summary>
 	/// <example>Validacijos informacija</example>
-	public override List<string> Details { get; set; } = new();
+	public override List<string> Details { get; set; } = [];
 
 }
 
@@ -139,6 +137,6 @@ public class E500 : ErrorB {
 	public string Message { get; set; } = "Sistemos klaida";
 	/// <summary>Klaidos informacija</summary>
 	/// <example>Validacijos informacija</example>
-	public override List<string> Details { get; set; } = new();
+	public override List<string> Details { get; set; } = [];
 
 }

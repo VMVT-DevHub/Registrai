@@ -128,8 +128,13 @@ CREATE VIEW ar.v_app_detales AS SELECT id, src, pavad, vietove, tipas, reg_data,
 	gyv_kodas, gyv_vardas, gyv_pavad, gyv_tipas, gyv_trump, gyv_cnt, gyv_mis, gat_kodas, gat_vardas, gat_tipas, gat_trump, gat_cnt, 
 	aob_kodas, aob_cnt, aob_nr, aob_korpusas, aob_patalpa, aob_post, aob_lks, aob_wgs FROM ar.v_app_data;
 
+CREATE OR REPLACE FUNCTION ar.geo_adr_find(x_point float, y_point float) RETURNS TABLE(aob integer, gyv integer, gat integer, x integer, y integer) LANGUAGE 'plpgsql' AS $BODY$ BEGIN RETURN QUERY SELECT aob_kodas, gyv_kodas, gat_kodas, x_koord, y_koord FROM ar.geo_6_adresai WHERE ar.ST_Contains(geom, ar.ST_Point(x_point,y_point,3346)) LIMIT 1; END; $BODY$;
+CREATE OR REPLACE FUNCTION ar.geo_adr_near(x_point float, y_point float, distance integer DEFAULT 50, reslimit int DEFAULT 5) RETURNS TABLE(dist float, aob integer, gyv integer, gat integer, x integer, y integer) LANGUAGE 'plpgsql' AS $BODY$ DECLARE fltr int; BEGIN SELECT gyv_kodas INTO fltr FROM ar.geo_4_gyvenvietes WHERE ar.ST_Contains(geom, ar.ST_Point(x_point, y_point, 3346)); RETURN QUERY SELECT ROUND(t.dist::numeric,2)::float dist,aob_kodas,gyv_kodas,gat_kodas,x_koord,y_koord FROM (SELECT ar.ST_Distance(geom, ar.ST_Point(x_point, y_point, 3346)) dist, aob_kodas, gyv_kodas, gat_kodas, x_koord, y_koord FROM ar.geo_6_adresai WHERE gyv_kodas=fltr ORDER BY dist ASC LIMIT reslimit ) t WHERE t.dist<=distance; END; $BODY$;
 
+
+-- TODO: Normaliai teises sudėlioti
 GRANT SELECT ON ALL TABLES IN SCHEMA ar TO "registrai_app";
+GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA ar TO "registrai_app";
 
 /*
 

@@ -1,16 +1,9 @@
-﻿using API;
+﻿using App;
 using App.Routing;
 using Microsoft.AspNetCore.Http;
-using Modules.AR.Models;
-using Npgsql;
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Registrai.Modules.AR.Models;
 
-namespace Modules.AR.Methods;
+namespace Registrai.Modules.AR.Methods;
 
 /// <summary>Adreso detalių gavimo metodas</summary>
 public static class ARDetails {

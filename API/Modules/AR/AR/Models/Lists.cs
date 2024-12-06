@@ -1,6 +1,6 @@
-﻿using API;
+﻿using App;
 
-namespace Modules.AR.Models;
+namespace Registrai.Modules.AR.Models;
 
 /// <summary>Adresų sąrašo rezultatas</summary>
 public class AR_List : DBPagingResponse<AR_ListItem> { }

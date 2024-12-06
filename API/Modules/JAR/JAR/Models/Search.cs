@@ -1,7 +1,7 @@
 ﻿using App;
 using System.Text.Json.Serialization;
 
-namespace Modules.JAR.Models;
+namespace Registrai.Modules.JAR.Models;
 
 
 /// <summary>Juridinių asmenų paieškos rezultatas</summary>

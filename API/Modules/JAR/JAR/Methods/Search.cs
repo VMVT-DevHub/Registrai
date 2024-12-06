@@ -1,11 +1,9 @@
-﻿using API;
+﻿using App;
 using App.Routing;
 using Microsoft.AspNetCore.Http;
-using Modules.JAR.Models;
-using System;
-using System.Text.Json.Serialization;
+using Registrai.Modules.JAR.Models;
 
-namespace Modules.JAR.Methods;
+namespace Registrai.Modules.JAR.Methods;
 
 /// <summary>Juridinių asmenų paieškos modelis</summary>
 public static class JARSearch {

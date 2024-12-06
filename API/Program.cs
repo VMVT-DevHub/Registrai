@@ -1,8 +1,6 @@
-﻿using Registrai.App;
-using App.Routing;
-using API.App;
-using Modules;
-using API;
+﻿using App;
+using Registrai.App;
+using Registrai.Modules;
 
 
 var app = Startup.Build(args);

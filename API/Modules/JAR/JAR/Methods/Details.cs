@@ -1,16 +1,9 @@
-﻿using API;
+﻿using App;
 using App.Routing;
 using Microsoft.AspNetCore.Http;
-using Modules.JAR.Models;
-using Npgsql;
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Registrai.Modules.JAR.Models;
 
-namespace Modules.JAR.Methods;
+namespace Registrai.Modules.JAR.Methods;
 
 /// <summary>Juridinio asmens detalių gavimo metodas</summary>
 public static class JARDetails {

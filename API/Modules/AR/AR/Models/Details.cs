@@ -1,4 +1,4 @@
-﻿namespace Modules.AR.Models;
+﻿namespace Registrai.Modules.AR.Models;
 
 /// <summary>Adresų registro įrašas</summary>
 public class AR_Item {

@@ -1,22 +1,17 @@
 ﻿namespace App.Routing;
 
-
 public enum Method { Get, Post, Put, Patch, Delete }
 
-public class Route<T> {
+public class Route<T>(Delegate hnd) {
 	public Method Method { get; set; } = Method.Get;
 	public string Path { get; set; } = "";
 	public string? Tag { get; set; }
 	public string? Description { get; set; }
 	public int Status { get; set; } = 200;
 	public List<int>? Errors { get; set; }
-	public Delegate Handler { get; set; }
-
-	public Route(Delegate hnd) {
-		Handler = hnd;
-	}
-
+	public Delegate Handler { get; set; } = hnd;
 }
+
 public static class Routing {
 	/// <summary>Extension for route handler to add swagger info for dev environment</summary>
 	/// <param name="rtx">Route handler</param>

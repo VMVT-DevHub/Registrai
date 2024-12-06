@@ -1,17 +1,9 @@
-﻿using API;
+﻿using App;
 using App.Routing;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using Modules.AR.Models;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.Intrinsics.Arm;
-using System.Text;
-using System.Threading.Tasks;
+using Registrai.Modules.AR.Models;
 
-namespace Modules.AR.Methods;
+namespace Registrai.Modules.AR.Methods;
 
 /// <summary>Adresų registro sąrašai</summary>
 public static class ARLists

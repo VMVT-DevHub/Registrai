@@ -4,8 +4,8 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<OutputType>Library</OutputType>
-		<RootNamespace>Modules</RootNamespace>
-		<AssemblyName>Modules.JAR</AssemblyName>
+		<RootNamespace>Registrai.Modules</RootNamespace>
+		<AssemblyName>Registrai.Modules.JAR</AssemblyName>
 	</PropertyGroup>
 
 	<ItemGroup>

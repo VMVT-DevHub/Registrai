@@ -1,4 +1,4 @@
-﻿namespace Modules.JAR.Models;
+﻿namespace Registrai.Modules.JAR.Models;
 
 /// <summary>Juridinio asmens registro įrašas</summary>
 public class JAR_Item {

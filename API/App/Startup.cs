@@ -1,11 +1,8 @@
-using System.Text.Json;
 using System.Text.Json.Serialization;
-using App;
 using Microsoft.AspNetCore.Diagnostics;
-using Registrai.App;
 
+namespace Registrai.App;
 
-namespace API.App;
 /// <summary>Application initial startup class</summary>
 public static class Startup {
 	/// <summary></summary>

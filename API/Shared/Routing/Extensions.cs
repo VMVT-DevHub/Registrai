@@ -1,11 +1,5 @@
-﻿using System.Text.Json.Serialization;
-using System.Text.Json;
-using System.Runtime.CompilerServices;
+﻿using System.Globalization;
 using System.Text;
-
-using System;
-using System.Globalization;
-using static System.Net.Mime.MediaTypeNames;
 using System.Text.RegularExpressions;
 
 namespace App.Routing;
