@@ -1,4 +1,7 @@
-﻿namespace App.Routing;
+﻿using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.OpenApi.Models;
+
+namespace App.Routing;
 
 public enum Method { Get, Post, Put, Patch, Delete }
 
@@ -9,7 +12,17 @@ public class Route<T>(Delegate hnd) {
 	public string? Description { get; set; }
 	public int Status { get; set; } = 200;
 	public List<int>? Errors { get; set; }
-	public Delegate Handler { get; set; } = hnd;
+    public List<RouteParam>? Params { get; set; }
+    public Delegate Handler { get; set; } = hnd;
+}
+
+public enum RouteParamType { String, Boolean, Integer, Number }
+public class RouteParam(string name) {
+	public string Name { get; set; } = name;
+	public string? Description { get; set; }
+	public RouteParamType Type { get; set; } = RouteParamType.String;
+	public bool Required { get; set; }
+	public OpenApiParameter GetParam() => new OpenApiParameter() { Name = Name, In = ParameterLocation.Query, Description = Description, Required = Required, Schema = new() { Type = Type.ToString().ToLower() } };
 }
 
 public static class Routing {
@@ -19,9 +32,13 @@ public static class Routing {
 	/// <param name="desc">API Description</param>
 	/// <param name="tag">API Tag name</param>
 	/// <returns>Route handler</returns>
-	public static RouteHandlerBuilder Swagger(this RouteHandlerBuilder rtx, string summary, string? desc = null, string? tag = null) {
+	public static RouteHandlerBuilder Swagger(this RouteHandlerBuilder rtx, string summary, string? desc = null, string? tag = null, List<RouteParam>? prm = null) {
 #if DEBUG //Disable swagger
-		rtx.WithOpenApi(o => new(o) { Summary = summary, Description = desc, Tags = tag is null ? null : [new() { Name = tag }] });
+		var op = new OpenApiOperation();
+		rtx.WithOpenApi(o => {
+			o.Summary = summary; o.Description = desc; o.Tags = tag is null ? null : [new() { Name = tag }];
+			if (prm is not null) foreach (var i in prm) o.Parameters.Add(i.GetParam()); return o;
+		});
 #endif
 		return rtx;
 	}

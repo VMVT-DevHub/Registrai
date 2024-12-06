@@ -114,7 +114,7 @@ public static class ARSearch {
 	}
 
 	private static async Task<List<AR_SearchItem>> GetSrh(string q, int top, string src, int? gyv = null) {
-		var ret = await new DBPagingRequest<AR_SearchItem>("ar.v_app_search") {
+		var wr = new DBPagingRequest<AR_SearchItem>("ar.v_app_search") {
 			Limit = top.Limit(pagelimit),
 			Page = 1,
 			Sort = "sort",
@@ -124,7 +124,8 @@ public static class ARSearch {
 			Select = SrhSelect,
 			Total = false,
 			Search = q.MkSerach()
-		}.Execute();
+		};
+		var ret = await wr.Execute();
 		return ret.Data;
 	}
 }

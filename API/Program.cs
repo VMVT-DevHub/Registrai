@@ -13,6 +13,7 @@ DB.Debug = cfg.Data.Debug;
 
 app.UseAdresuRegistras();
 app.UseJuridiniuAsmenuRegistras();
+app.UseSaliuRegistras();
 
 app.Run();
 

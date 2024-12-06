@@ -21,11 +21,14 @@ public static partial class Extensions {
 			_ => app.Map(route.Path, route.Handler),
 		};
 #if DEBUG //Disable Swagger
-		bld.Swagger("", route.Description, route.Tag).Produces<T>(route.Status);
+		bld.Swagger("", route.Description, route.Tag, route.Params).Produces<T>(route.Status);
 		if (route.Errors?.Count > 0) { bld.Errors([.. route.Errors]); }
 #endif
 		return app;
 	}
+
+	public static bool ParamTrue(this HttpContext ctx, string prm) => ctx.Request.Query.TryGetValue(prm, out var flg) && (string.IsNullOrEmpty(flg) || flg == "1" || (bool.TryParse(flg, out var b3) && b3));
+
 
 	public static int Limit(this int num, int max) => num > max ? max : num;
 

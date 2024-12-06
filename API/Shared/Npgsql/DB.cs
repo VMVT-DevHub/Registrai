@@ -147,7 +147,8 @@ namespace App {
 			if (Fields is null) { throw new Exception("Missing data fields"); }
 			if (Select is null) { throw new Exception("Missing select fields"); }
 			if (Sort is not null && !Fields.Contains(Sort)) { throw new Exception("Sort not valid"); }
-			var srt = $"\"{Sort}\"";
+			var srt = $"\"{Sort}\""; var slt = $"\"{string.Join("\",\"", Select)}\"";
+			var advs = false;
 
 			string where = ""; var param = new Dictionary<string, object?>();
 			var whr = new List<string>();
@@ -166,15 +167,23 @@ namespace App {
 				if (!Fields.Contains("search")) { throw new Exception("Search not available"); }
 				if (StartsWith) { whr.Add($"search like @qs||'%'"); param[$"@qs"] = Search; }
 				else {
-					whr.Add($"similarity(search,@srhq)>0.5");
-					param["@srhq"] = Search;
-					srt = $"similarity(search,@srhq) desc" + (srt is null ? "" : "," + srt);
+					var qs = Search.ToLower().Replace("  ", " ").Split(" ");
+					for (var i = 0; i < qs.Length; i++) {
+						var j = qs[i];
+						whr.Add($"search like '%'||@s{i}||'%'");
+						param[$"@s{i}"] = j;
+					}
+					slt = "similarity(search,@srhq) srsiml, " + slt;
+					srt = $"srsiml desc" + (srt is null ? "" : "," + srt);
+					param["@srhq"] = Search; advs = true;
 				}
 			}
 			if (whr.Count > 0) where = $" WHERE {string.Join(" and ", whr)} ";
 
 			var ret = new DBPagingResponse<T>() { Total = Total ? await DB.GetCount(Table, where, param) : 0, Page = Page };
-			using var db = new DBRead($"SELECT \"{string.Join("\",\"", Select)}\" FROM {Table} {where} {(srt is null ? "" : $"ORDER By {srt} {(Desc ? "Desc" : "Asc")}")} LIMIT {Limit} OFFSET {(Page - 1) * Limit}", param);
+			var qry = $"SELECT {slt} FROM {Table} {where} {(srt is null ? "" : $"ORDER By {srt} {(Desc ? "Desc" : "Asc")}")} LIMIT {Limit} OFFSET {(Page - 1) * Limit}";
+			if (advs) qry = $"SELECT * FROM ({qry}) WHERE srsiml>0";
+			using var db = new DBRead(qry, param);
 			using var rdr = await db.GetReader();
 
 
