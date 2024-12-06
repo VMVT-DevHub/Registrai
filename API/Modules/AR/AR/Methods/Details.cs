@@ -1,5 +1,5 @@
 ﻿using App;
-using App.Routing
+using App.Routing;
 using Microsoft.AspNetCore.Http;
 using Registrai.Modules.AR.Models;
 
