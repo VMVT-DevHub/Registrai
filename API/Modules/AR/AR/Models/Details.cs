@@ -20,6 +20,8 @@ public class AR_Item {
 	public string? Pat { get; set; }
 	/// <summary>Pašto adresas (AOB)</summary>
 	public string? Post { get; set; }
+	/// <summary>Bendras teritorijos plotas (kv.m) arba gatvės ilgis (m)</summary>
+	public long? Dydis { get; set; }
 	/// <summary>Adreso registracijos data</summary>
 	public DateOnly? RegData { get; set; }
 	/// <summary>Adreso LKS koordinatės</summary>

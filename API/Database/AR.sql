@@ -56,7 +56,12 @@ CREATE MATERIALIZED VIEW ar.v_app_data AS
 	gatc as (SELECT gat_kodas id, count(*)::int gat_cnt FROM ar.adr_6_adresai WHERE gat_kodas is not null GROUP By gat_kodas),
 	aobc as (SELECT aob_kodas id, count(*)::int aob_cnt FROM ar.adr_7_patalpos WHERE aob_kodas is not null GROUP By aob_kodas),	
 	savm as (SELECT sav_kodas id, count(*)::int sav_mis FROM ar.adr_4_gyvenvietes WHERE sen_kodas is null GROUP By sav_kodas),
-	gyvm as (SELECT gyv_kodas id, count(*)::int gyv_mis FROM ar.adr_6_adresai WHERE gat_kodas is null GROUP By gyv_kodas),	
+	gyvm as (SELECT gyv_kodas id, count(*)::int gyv_mis FROM ar.adr_6_adresai WHERE gat_kodas is null GROUP By gyv_kodas),
+	admg as (SELECT aps_kodas::int id, ar.ST_Area(geom)::bigint plotas FROM ar.geo_1_apskritys),
+	savg as (SELECT sav_kodas::int id, ar.ST_Area(geom)::bigint plotas FROM ar.geo_2_savivaldybes),
+	seng as (SELECT sen_kodas::int id, ar.ST_Area(geom)::bigint plotas FROM ar.geo_3_seniunijos),
+	gyvg as (SELECT gyv_kodas::int id, ar.ST_Area(geom)::bigint plotas FROM ar.geo_4_gyvenvietes),
+	gatg as (SELECT gat_kodas::int id, ar.ST_Length(geom)::bigint ilgis FROM ar.geo_5_gatves),
 	geo  as (SELECT DISTINCT aob_kodas id, ARRAY[x_koord, y_koord] aob_lks, ARRAY[e_koord, n_koord] aob_wgs FROM ar.geo_6_adresai),
 	dm as (
 		SELECT dt.id, src, 
@@ -70,29 +75,28 @@ CREATE MATERIALIZED VIEW ar.v_app_data AS
 					REPLACE(REPLACE(sen_vardas,' miesto',' m.'),' kaimiškoji',' k.') || ' ' || sen_trump, CASE WHEN gat_kodas is NOT NULL THEN ', ' || gyv_pavad END )
 				WHEN src = 'sen' THEN CONCAT(adm_vardas || ' ' || adm_trump , ', ' || REPLACE(REPLACE(sav_vardas,' miesto',' m.'),' rajono',' r.') || ' ' || sav_trump )
 				WHEN src = 'sav' THEN adm_vardas || ' ' || adm_trump END AS vietove,
-			tipas,reg_data, 
+			tipas,reg_data,
 			adm_kodas,adm_vardas,adm_tipas,adm_trump,COALESCE(adm_cnt,0) adm_cnt,
 			sav_kodas,sav_vardas,sav_tipas,sav_trump,COALESCE(sav_cnt,0) sav_cnt, sav_mis,
 			sen_kodas,sen_vardas,sen_tipas,sen_trump,COALESCE(sen_cnt,0) sen_cnt,
 			gyv_kodas,gyv_vardas,gyv_tipas,gyv_trump,gyv_pavad,COALESCE(gyv_cnt,0) gyv_cnt, gyv_mis,
 			gat_kodas,gat_vardas,gat_tipas,gat_trump,COALESCE(gat_cnt,0) gat_cnt,
 			aob_kodas,aob_nr,aob_korpusas,aob_patalpa,COALESCE(aob_cnt,0) aob_cnt,aob_post,aob_lks,aob_wgs,
-			src='pat' as aob_pat, array_to_string(array(select distinct unnest(string_to_array(ar.unaccent(lower(
+			src='pat' as aob_pat, COALESCE(gatg.ilgis,gyvg.plotas,seng.plotas,savg.plotas,admg.plotas) as dydis,
+			array_to_string(array(select distinct unnest(string_to_array(ar.unaccent(lower(
 				REPLACE(REPLACE(CONCAT(adm_vardas,' ' || sav_vardas,' ' || sen_vardas,' ' || gyv_vardas,' ' || gyv_pavad,' ' || gat_vardas, CONCAT(' ' || aob_nr, ' K' || aob_korpusas, '-' || aob_patalpa)),' miesto',''),' rajono','')
 			)), ' '))), ' ') as srh2, ar.unaccent(lower(vardas)) as srh1
-		FROM dt 		
-			LEFT JOIN admc on (adm_kodas=admc.id) LEFT JOIN savc on (sav_kodas=savc.id)
-			LEFT JOIN senc on (sen_kodas=senc.id) LEFT JOIN gyvc on (gyv_kodas=gyvc.id)
-			LEFT JOIN gatc on (gat_kodas=gatc.id) LEFT JOIN aobc on (aob_kodas=aobc.id)
-			LEFT JOIN savm on (sav_kodas=savm.id) LEFT JOIN gyvm on (gyv_kodas=gyvm.id)
-			LEFT JOIN geo  on (aob_kodas=geo.id)
+		FROM dt 
+			LEFT JOIN admc on (adm_kodas=admc.id) LEFT JOIN admg on (adm_kodas=admg.id)
+			LEFT JOIN savc on (sav_kodas=savc.id) LEFT JOIN savg on (sav_kodas=savg.id)
+			LEFT JOIN senc on (sen_kodas=senc.id) LEFT JOIN seng on (sen_kodas=seng.id)
+			LEFT JOIN gyvc on (gyv_kodas=gyvc.id) LEFT JOIN gyvg on (gyv_kodas=gyvg.id)
+			LEFT JOIN gatc on (gat_kodas=gatc.id) LEFT JOIN gatg on (gat_kodas=gatg.id)
+			LEFT JOIN aobc on (aob_kodas=aobc.id) LEFT JOIN savm on (sav_kodas=savm.id) 
+			LEFT JOIN gyvm on (gyv_kodas=gyvm.id) LEFT JOIN geo  on (aob_kodas=geo.id)
 	)
 	SELECT *,
-		(sav_cnt+COALESCE(sav_mis,0)+sen_cnt + (gyv_cnt+COALESCE(gyv_mis,0))*2 + gat_cnt*0.5 + aob_cnt*0.2 +
- 			CASE WHEN aob_patalpa~E'^\\d+$' THEN 1000-COALESCE(aob_patalpa::int,0) ELSE 0 END - CASE WHEN aob_korpusas is null THEN 0 ELSE aob_cnt END)::int
-			* case src when 'pat' then 1 WHEN 'aob' THEN 5 WHEN 'gyv' THEN 20 WHEN 'gat' THEN 12 ELSE 1 END
-			+ case src when 'gyv' then 20000 WHEN 'sav' THEN 20000 WHEN 'gat' THEN 15000  WHEN 'aob' THEN 5000  ELSE 0 END
-			+ case when gyv_trump='m.' then 5000 else 0 end as sort
+		dydis as sort
 	FROM dm;
 
 CREATE INDEX ar_v_app_data_id_idx on ar.v_app_data (id);
@@ -126,7 +130,7 @@ CREATE VIEW ar.v_app_search_adr AS SELECT id "ID",pavad "Pavad",vietove "Vietove
 CREATE VIEW ar.v_app_detales AS SELECT id, src, pavad, vietove, tipas, reg_data, adm_kodas, adm_vardas, adm_tipas, adm_trump, adm_cnt,
 	sav_kodas, sav_vardas, sav_tipas, sav_trump, sav_cnt, sav_mis, sen_kodas, sen_vardas, sen_tipas, sen_trump, sen_cnt,
 	gyv_kodas, gyv_vardas, gyv_pavad, gyv_tipas, gyv_trump, gyv_cnt, gyv_mis, gat_kodas, gat_vardas, gat_tipas, gat_trump, gat_cnt, 
-	aob_kodas, aob_cnt, aob_nr, aob_korpusas, aob_patalpa, aob_post, aob_lks, aob_wgs FROM ar.v_app_data;
+	aob_kodas, aob_cnt, aob_nr, aob_korpusas, aob_patalpa, aob_post, aob_lks, aob_wgs, dydis FROM ar.v_app_data;
 
 CREATE OR REPLACE FUNCTION ar.geo_adr_find(x_point float, y_point float) RETURNS TABLE(aob integer, gyv integer, gat integer, x integer, y integer) LANGUAGE 'plpgsql' AS $BODY$ BEGIN RETURN QUERY SELECT aob_kodas, gyv_kodas, gat_kodas, x_koord, y_koord FROM ar.geo_6_adresai WHERE ar.ST_Contains(geom, ar.ST_Point(x_point,y_point,3346)) LIMIT 1; END; $BODY$;
 CREATE OR REPLACE FUNCTION ar.geo_adr_near(x_point float, y_point float, distance integer DEFAULT 50, reslimit int DEFAULT 5) RETURNS TABLE(dist float, aob integer, gyv integer, gat integer, x integer, y integer) LANGUAGE 'plpgsql' AS $BODY$ DECLARE fltr int; BEGIN SELECT gyv_kodas INTO fltr FROM ar.geo_4_gyvenvietes WHERE ar.ST_Contains(geom, ar.ST_Point(x_point, y_point, 3346)); RETURN QUERY SELECT ROUND(t.dist::numeric,2)::float dist,aob_kodas,gyv_kodas,gat_kodas,x_koord,y_koord FROM (SELECT ar.ST_Distance(geom, ar.ST_Point(x_point, y_point, 3346)) dist, aob_kodas, gyv_kodas, gat_kodas, x_koord, y_koord FROM ar.geo_6_adresai WHERE gyv_kodas=fltr ORDER BY dist ASC LIMIT reslimit ) t WHERE t.dist<=distance; END; $BODY$;

@@ -22,7 +22,7 @@ public class RouteParam(string name) {
 	public string? Description { get; set; }
 	public RouteParamType Type { get; set; } = RouteParamType.String;
 	public bool Required { get; set; }
-	public OpenApiParameter GetParam() => new OpenApiParameter() { Name = Name, In = ParameterLocation.Query, Description = Description, Required = Required, Schema = new() { Type = Type.ToString().ToLower() } };
+	public OpenApiParameter GetParam() => new () { Name = Name, In = ParameterLocation.Query, Description = Description, Required = Required, Schema = new() { Type = Type.ToString().ToLower() } };
 }
 
 public static class Routing {

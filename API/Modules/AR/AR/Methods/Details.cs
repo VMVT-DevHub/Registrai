@@ -1,5 +1,5 @@
 ﻿using App;
-using App.Routing;
+using App.Routing
 using Microsoft.AspNetCore.Http;
 using Registrai.Modules.AR.Models;
 
@@ -30,8 +30,8 @@ public static class ARDetails {
                 //27          28         29         30
                 "gyv_vardas, gyv_pavad, gyv_tipas, gyv_trump, gyv_cnt, gyv_mis, " +
                 //31          32         33        34		   35       36
-                "gat_vardas, gat_tipas, gat_trump, gat_cnt, aob_cnt "
-            //	  37          38         39         40       41
+                "gat_vardas, gat_tipas, gat_trump, gat_cnt, aob_cnt, dydis "
+            //	  37          38         39         40       41       42
             : "") +
             $"FROM ar.v_app_detales WHERE id={id}");
         using var rdr = await db.GetReader();
@@ -63,6 +63,7 @@ public static class ARDetails {
                     if (kd.Gyv is not null) ret.Gyv = new() { ID = kd.Gyv, Vardas = rdr.GetStringN(31), Pavad = rdr.GetStringN(32), Tipas = rdr.GetStringN(33), Trump = rdr.GetStringN(34), Chc = rdr.GetIntN(35), Chm = rdr.GetIntN(36) };
                     if (kd.Gat is not null) ret.Gat = new() { ID = kd.Gat, Vardas = rdr.GetStringN(37), Tipas = rdr.GetStringN(38), Trump = rdr.GetStringN(39), Chc = rdr.GetIntN(40) };
                     if (kd.Aob is not null) ret.Aob = new() { ID = kd.Aob, Vardas = ret.Nr + (ret.Korp is null ? "" : " K" + ret.Korp) + (ret.Pat is null ? "" : "-" + ret.Pat), Chc = rdr.GetIntN(41) };
+                    if (!rdr.IsDBNull(42)) ret.Dydis = rdr.GetLongN(42);
                 }
                 else {
                     ret.Kodai = kd;
