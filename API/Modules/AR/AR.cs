@@ -39,6 +39,9 @@ public static class AdresuRegistras {
 		var tg4 = "Adresų Registras - Įrašo detalės";
 		app.Attach(new Route<AR_Item>(ARDetails.Detales) { Path = "/ar/details", Description = "Gauti adreso detales", Tag = tg4 });
 
+		var tg5 = "Adresų Registras - Greita paieška";
+		app.Attach(new Route<AR_Search>(ARSearch.Gyv) { Path = "/ar/gyv", Description = "Gyvenviečių paieška", Tag = tg5, Method = Method.Get });
+		app.Attach(new Route<AR_Search>(ARSearch.Adr) { Path = "/ar/adr", Description = "išplėstinė adresų paieška pagal gatvę, adresą ir/ar patalpą", Tag = tg5, Method = Method.Get });
 
 		return app;
 	}
