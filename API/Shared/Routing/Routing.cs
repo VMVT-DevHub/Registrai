@@ -15,15 +15,16 @@ public class Route<T>(Delegate hnd) {
     public List<RouteParam>? Params { get; set; }
     public Delegate Handler { get; set; } = hnd;
 }
-
+#if DEBUG
 public enum RouteParamType { String, Boolean, Integer, Number }
 public class RouteParam(string name) {
 	public string Name { get; set; } = name;
 	public string? Description { get; set; }
 	public RouteParamType Type { get; set; } = RouteParamType.String;
 	public bool Required { get; set; }
-	public OpenApiParameter GetParam() => new () { Name = Name, In = ParameterLocation.Query, Description = Description, Required = Required, Schema = new() { Type = Type.ToString().ToLower() } };
+	public OpenApiParameter GetParam() => new() { Name = Name, In = ParameterLocation.Query, Description = Description, Required = Required, Schema = new() { Type = Type.ToString().ToLower() } };
 }
+#endif
 
 public static class Routing {
 	/// <summary>Extension for route handler to add swagger info for dev environment</summary>
