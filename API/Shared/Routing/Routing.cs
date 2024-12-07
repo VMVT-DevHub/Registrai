@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.Diagnostics.HealthChecks;
-using Microsoft.OpenApi.Models;
+#if DEBUG
+	using Microsoft.OpenApi.Models;
+#endif
 
 namespace App.Routing;
 
@@ -12,19 +14,20 @@ public class Route<T>(Delegate hnd) {
 	public string? Description { get; set; }
 	public int Status { get; set; } = 200;
 	public List<int>? Errors { get; set; }
-    public List<RouteParam>? Params { get; set; }
-    public Delegate Handler { get; set; } = hnd;
+	public List<RouteParam>? Params { get; set; }
+	public Delegate Handler { get; set; } = hnd;
 }
-#if DEBUG
+
 public enum RouteParamType { String, Boolean, Integer, Number }
 public class RouteParam(string name) {
 	public string Name { get; set; } = name;
 	public string? Description { get; set; }
 	public RouteParamType Type { get; set; } = RouteParamType.String;
 	public bool Required { get; set; }
+#if DEBUG
 	public OpenApiParameter GetParam() => new() { Name = Name, In = ParameterLocation.Query, Description = Description, Required = Required, Schema = new() { Type = Type.ToString().ToLower() } };
-}
 #endif
+}
 
 public static class Routing {
 	/// <summary>Extension for route handler to add swagger info for dev environment</summary>
@@ -35,7 +38,7 @@ public static class Routing {
 	/// <returns>Route handler</returns>
 	public static RouteHandlerBuilder Swagger(this RouteHandlerBuilder rtx, string summary, string? desc = null, string? tag = null, List<RouteParam>? prm = null) {
 #if DEBUG //Disable swagger
-		var op = new OpenApiOperation();
+		var op = new Microsoft.OpenApi.Models.OpenApiOperation();
 		rtx.WithOpenApi(o => {
 			o.Summary = summary; o.Description = desc; o.Tags = tag is null ? null : [new() { Name = tag }];
 			if (prm is not null) foreach (var i in prm) o.Parameters.Add(i.GetParam()); return o;
