@@ -23,14 +23,12 @@ public static partial class Sal {
 	/// <param name="ctx"></param>
 	/// <param name="page">Puslapis</param>
 	/// <param name="top">Duomenų ribojimas</param>
-	/// <param name="eu">Autopos sąjungo šalis</param>
 	/// <param name="order">Rikiavimas</param>
-	/// <param name="desc">Rikiavimas mažėjančiai</param>
 	/// <returns></returns>
-	public static async Task List(HttpContext ctx, int page = 1, int top = 250, bool? eu=false, string? order = null, bool desc = false) {
+	public static async Task List(HttpContext ctx, int page = 1, int top = 250, string? order = null) {
 		var m = await new DBPagingRequest<Sal_Item>("public.v_app_salys") {
-			Limit = top, Page = page, Sort = order ?? "ISO3", Desc = desc,
-			Where = eu ?? true ? new() { Eu = true } : null, Fields = ListFld, Select = ListSel
+			Limit = top, Page = page, Sort = order ?? "Iso3", Desc = ctx.ParamTrue("desc"),
+			Where = ctx.ParamTrue("eu") ? new() { Eu = true } : null, Fields = ListFld, Select = ListSel
 		}.Execute();
 		await ctx.Response.WriteAsJsonAsync(m);
 	}
@@ -78,6 +76,7 @@ public static partial class Sal {
 			Fields = ListFld,
 			Select = ListSel,
 			Total = false,
+			Where = ctx.ParamTrue("eu") ? new() { Eu = true } : null,
 			Search = q.MkSerach()
 		}.Execute();
 		await ctx.Response.WriteAsJsonAsync(m.Data);

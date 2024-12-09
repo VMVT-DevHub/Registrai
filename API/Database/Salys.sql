@@ -214,7 +214,7 @@ INSERT INTO public.salys(name,title,iso2,iso3,capital,eng) VALUES
 ('Žaliasis Kyšulys','Žaliojo Kyšulio Respublika','CV','CPV','Praja','Cabo Verde');
 
 UPDATE public.salys SET search = replace(array_to_string(ARRAY(SELECT DISTINCT word FROM unnest(string_to_array(ar.unaccent(lower(CONCAT(name,' ',title,' ',capital,' ',eng,' ',iso2,' ',iso3))), ' ')) AS word), ' '),'  ',' ');
-UPDATE public.salys SET eu=true WHERE iso3 in ('AUT','BEL','BGR','CYP','CZE','DEU','DNK','ESP','EST','FIN','FRA','GRC','HRV','HUN','IRL','ITA','LTU','LUX','LVA','MLT','NLD','POL','PRT','ROU','SVK','SVN','SWE');
+UPDATE public.salys SET eu=true where iso3 in ('AUT','BEL','BGR','CYP','CZE','DEU','DNK','ESP','EST','FIN','FRA','GRC','HRV','HUN','IRL','ITA','LTU','LUX','LVA','MLT','NLD','POL','PRT','ROU','SVK','SVN','SWE');
 
 CREATE OR REPLACE VIEW public.v_app_salys AS SELECT iso3 "Iso3", iso2 "Iso2", name "Pavad", title "Pilnas", capital "Sostine", eng "Eng", eu "Eu", search FROM public.salys;
 

@@ -18,9 +18,11 @@ public static class SaliuRegistras {
 		//app.Attach(new Route<AR_GEOItem>(ARGEO.Sav) { Path = "/ar/geo/sav", Description = "Savivaldybė pagal koordinates", Tag = tg1, Method = Method.Get });
 		app.Attach(new Route<string>(Sal.Search) {
 			Path = "/salys/search", Description = "Šalies paieška", Tag = tg1, Method = Method.Get,
-			Params = [new("flag") { Description = "Rodyti šalies vėliavą" }]
+			Params = [new("eu") { Description = "Rodyti tik EU šalis" }]
 		});
-		app.Attach(new Route<string>(Sal.List) { Path = "/salys/list", Description = "Visų šalių informacija", Tag = tg1, Method = Method.Get });
+		app.Attach(new Route<string>(Sal.List) { Path = "/salys/list", Description = "Visų šalių informacija", Tag = tg1, Method = Method.Get,
+			Params = [new("eu") { Description = "Rodyti tik EU šalis" }, new("desc") { Description = "Rikiuoti mažėjančia tvarka" }]
+		});
 		app.Attach(new Route<string>(Sal.Info) {
 			Path = "/salys/{iso3}", Description = "Šalies informacija", Tag = tg1, Method = Method.Get,
 			Params = [new("flag") { Description = "Rodyti šalies vėliavą" }]
