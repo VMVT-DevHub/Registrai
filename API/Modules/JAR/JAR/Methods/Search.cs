@@ -26,10 +26,8 @@ public static class JARSearch {
 	/// <param name="q">Paieškos užklausa</param>
 	/// <param name="top">Įrašų skaičius</param>
 	/// <param name="status">Statuso kodo filtravimas</param>
-	/// <param name="details">Rodyti daugiau informacijos</param>
-	/// <param name="active">Tik aktyvūs juridiniai asmenys</param>
 	/// <returns></returns>
-	public static async Task GetSrh(HttpContext ctx, string q, int top=10, bool? details=false, bool? active=false, int? status=null) {
+	public static async Task GetSrh(HttpContext ctx, string q, int top=10, int? status=null) {
 		var srt = false;
 		if (q.Length > 6 && long.TryParse(q, out var num) && num > 1e5) { srt = true; q = num.ToString(); }
 		else { q = q.MkSerach() ?? ""; }
@@ -39,9 +37,9 @@ public static class JARSearch {
 			Page = 1,
 			StartsWith = srt,
 			Sort = "sort",
-			Where = new() { StatusKodas = status, Active = active ?? true ? true : null },
+			Where = new() { StatusKodas = status, Active = ctx.ParamTrue("active") ? true : null },
 			Fields = SrhFields,
-			Select = details ?? true ? SrhSelect1 : SrhSelect2,
+			Select = ctx.ParamTrue("details") ? SrhSelect1 : SrhSelect2,
 			Total = false,
 			Search = q
 		}.Execute();

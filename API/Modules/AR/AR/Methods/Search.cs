@@ -113,17 +113,33 @@ public static class ARSearch {
 		await ctx.Response.WriteAsJsonAsync(m.Data);
 	}
 
+
+	/// <summary>Gyvenviečių paieška (GYV)</summary>
+	/// <param name="ctx"></param>
+	/// <param name="q">Paieškos frazė</param>
+	/// <param name="top">Duomenų ribojimas</param>
+	/// <returns></returns>
+	public static async Task FGyv(HttpContext ctx, string q, int top = 10) => await ctx.Response.WriteAsJsonAsync(await GetSrh(q, top, "gyv"));
+
+	/// <summary>Adresų paieška (GAT+AOB+PAT)</summary>
+	/// <param name="ctx"></param>
+	/// <param name="gyv">Gyvenvietės kodas</param>
+	/// <param name="q">Paieškos frazė</param>
+	/// <param name="top">Duomenų ribojimas</param>
+	public static async Task FAdr(HttpContext ctx, int gyv, string q, int top = 10) => await Adr(ctx, gyv, q, top);
+
+
 	private static async Task<List<AR_SearchItem>> GetSrh(string q, int top, string src, int? gyv = null) {
 		var wr = new DBPagingRequest<AR_SearchItem>("ar.v_app_search") {
 			Limit = top.Limit(pagelimit),
 			Page = 1,
-			Sort = "sort",
 			Desc = true,
 			Where = new() { Src = src, Gyv = gyv },
 			Fields = SrhFields,
 			Select = SrhSelect,
 			Total = false,
-			Search = q.MkSerach()
+			Search = q.MkSerach(),
+			SearchSort = "sort"
 		};
 		var ret = await wr.Execute();
 		return ret.Data;

@@ -13,10 +13,18 @@ public static class JuridiniuAsmenuRegistras {
 	public static WebApplication UseJuridiniuAsmenuRegistras(this WebApplication app) {
 
 		var tg3 = "Juridinių Asmenų Registras";
-		app.Attach(new Route<JAR_Item>(JARDetails.Detales) { Path = "/jar/details", Description = "Gauti juridinio asmens detales", Tag = tg3 });
-
-		app.Attach(new Route<JAR_Search>(JARSearch.FullSearch) { Path = "/jar/search", Description = "Gauti filtruotą juridinių asmenų paieškos resultatą", Tag = tg3, Method = Method.Post });
-		app.Attach(new Route<JAR_Search>(JARSearch.GetSrh) { Path = "/jar/search", Description = "Gauti supaprastintą juridinių asmenų paieškos resultatą", Tag = tg3 });
+		app.Attach(new Route<JAR_Item>(JARDetails.Detales) {
+			Path = "/jar/details", Description = "Gauti juridinio asmens detales", Tag = tg3
+		});
+		app.Attach(new Route<JAR_Search>(JARSearch.FullSearch) {
+			Path = "/jar/search", Description = "Gauti filtruotą juridinių asmenų paieškos resultatą", Tag = tg3, Method = Method.Post
+		});
+		app.Attach(new Route<JAR_Search>(JARSearch.GetSrh) {
+			Path = "/jar/search", Description = "Gauti supaprastintą juridinių asmenų paieškos resultatą", Tag = tg3,
+			Params = [
+				new("details") { Description = "Rodyti daugiau informacijos" },
+				new("active") { Description = "Tik aktyvūs juridiniai asmenys" }]
+		});
 
 		return app;
 	}

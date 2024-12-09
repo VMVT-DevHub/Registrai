@@ -8,6 +8,7 @@ namespace App.Routing;
 public enum Method { Get, Post, Put, Patch, Delete }
 
 public class Route<T>(Delegate hnd) {
+	public string? Summary { get; set; }
 	public Method Method { get; set; } = Method.Get;
 	public string Path { get; set; } = "";
 	public string? Tag { get; set; }
@@ -22,7 +23,7 @@ public enum RouteParamType { String, Boolean, Integer, Number }
 public class RouteParam(string name) {
 	public string Name { get; set; } = name;
 	public string? Description { get; set; }
-	public RouteParamType Type { get; set; } = RouteParamType.String;
+	public RouteParamType Type { get; set; } = RouteParamType.Boolean;
 	public bool Required { get; set; }
 #if DEBUG
 	public OpenApiParameter GetParam() => new() { Name = Name, In = ParameterLocation.Query, Description = Description, Required = Required, Schema = new() { Type = Type.ToString().ToLower() } };

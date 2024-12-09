@@ -21,7 +21,7 @@ public static partial class Extensions {
 			_ => app.Map(route.Path, route.Handler),
 		};
 #if DEBUG //Disable Swagger
-		bld.Swagger("", route.Description, route.Tag, route.Params).Produces<T>(route.Status);
+		bld.Swagger(route.Summary??"", route.Description, route.Tag, route.Params).Produces<T>(route.Status);
 		if (route.Errors?.Count > 0) { bld.Errors([.. route.Errors]); }
 #endif
 		return app;

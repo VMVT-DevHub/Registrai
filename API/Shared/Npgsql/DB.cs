@@ -126,6 +126,8 @@ namespace App {
 		/// <summary>Paieškos laukas</summary>
 		public string? Search { get; set; }
 		/// <summary>Paieška prasideda fraze</summary>
+		public string? SearchSort { get; set; }
+		/// <summary>Paieška prasideda fraze</summary>
 		public bool StartsWith { get; set; }
 		/// <summary>Puslapio dydis</summary>
 		public int Limit { get; set; } = 50;
@@ -173,7 +175,7 @@ namespace App {
 						whr.Add($"search like '%'||@s{i}||'%'");
 						param[$"@s{i}"] = j;
 					}
-					slt = "similarity(search,@srhq) srsiml, " + slt;
+					slt = $"similarity(search,@srhq){(string.IsNullOrEmpty(SearchSort) ? "" : "*" + SearchSort)} srsiml, {slt}";
 					srt = $"srsiml desc" + (srt is null ? "" : "," + srt);
 					param["@srhq"] = Search; advs = true;
 				}

@@ -26,7 +26,7 @@ SET SESSION AUTHORIZATION "_master_admin";
 DROP MATERIALIZED VIEW IF EXISTS ar.v_app_data;
 CREATE MATERIALIZED VIEW ar.v_app_data AS
 	WITH dt as (
-		SELECT d.id, d.src, CASE d.src
+		SELECT d.id, d.src, d.tipo_santrumpa trump, CASE d.src
 				WHEN 'pat'::bpchar THEN concat(COALESCE(gat.vardas_k, gyv.vardas_k), ' ' || aob.nr, ' K' || aob.korpuso_nr, '-' || CASE WHEN d.src = 'pat' THEN d.vardas_k ELSE null END)
 				WHEN 'aob'::bpchar THEN concat(COALESCE(gat.vardas_k, gyv.vardas_k), ' ' || aob.nr, ' K' || aob.korpuso_nr)
 				ELSE concat(d.vardas_k, ' '::text || d.kita::text) END AS vardas, d.reg_data,
@@ -64,7 +64,7 @@ CREATE MATERIALIZED VIEW ar.v_app_data AS
 	gatg as (SELECT gat_kodas::int id, ar.ST_Length(geom)::bigint ilgis FROM ar.geo_5_gatves),
 	geo  as (SELECT DISTINCT aob_kodas id, ARRAY[x_koord, y_koord] aob_lks, ARRAY[e_koord, n_koord] aob_wgs FROM ar.geo_6_adresai),
 	dm as (
-		SELECT dt.id, src, 
+		SELECT dt.id, src,
 		CASE src
 				WHEN 'pat' THEN CONCAT(COALESCE(gat_vardas || ' ' || gat_trump,gyv_vardas || ' ' || gyv_trump), ' ' || aob_nr, ' K' || aob_korpusas, '-' || aob_patalpa )
 				WHEN 'aob' THEN CONCAT(COALESCE(gat_vardas || ' ' || gat_trump,gyv_vardas || ' ' || gyv_trump), ' ' || aob_nr, ' K' || aob_korpusas )
@@ -95,8 +95,17 @@ CREATE MATERIALIZED VIEW ar.v_app_data AS
 			LEFT JOIN aobc on (aob_kodas=aobc.id) LEFT JOIN savm on (sav_kodas=savm.id) 
 			LEFT JOIN gyvm on (gyv_kodas=gyvm.id) LEFT JOIN geo  on (aob_kodas=geo.id)
 	)
+	
 	SELECT *,
-		dydis as sort
+		CASE src
+			WHEN 'gyv' THEN
+				CASE gyv_trump
+					WHEN 'm.' THEN dydis*0.001
+					WHEN 'mstl.' THEN dydis*0.0001
+					ELSE dydis*0.000001
+				END
+			ELSE dydis*0.000001
+		END as sort
 	FROM dm;
 
 CREATE INDEX ar_v_app_data_id_idx on ar.v_app_data (id);
