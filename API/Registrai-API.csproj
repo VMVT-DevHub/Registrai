@@ -24,6 +24,7 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="Modules\AR\AR.csproj" />
+	  <ProjectReference Include="Modules\EVRK\EVRK.csproj" />
 	  <ProjectReference Include="Modules\JAR\JAR.csproj" />
 	  <ProjectReference Include="Modules\Salys\Salys.csproj" />
 	  <ProjectReference Include="Shared\Npgsql\Npgsql.csproj" />

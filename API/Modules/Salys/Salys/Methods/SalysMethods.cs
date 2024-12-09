@@ -62,7 +62,7 @@ public static partial class Sal {
 		else { ctx.Response.E404(true); }
 	}
 
-	private static string? MkSerach(this string? q) => q?.RemoveAccents().RemoveNonAlphanumeric(true).ToLower();
+	private static string? MkSerach(this string? q) => q?.RemoveAccents().RemoveNonAlphanumeric().ToLower();
 	/// <summary>Šalių paieška</summary>
 	/// <param name="ctx"></param>
 	/// <param name="q">Paieškos užklausa</param>

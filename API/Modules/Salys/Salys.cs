@@ -13,9 +13,6 @@ public static class SaliuRegistras {
 	public static WebApplication UseSaliuRegistras(this WebApplication app) {
 
 		var tg1 = "Šalių Registras";
-		//app.Attach(new Route<AR_GEO>(Sal.AobSearch) { Path = "/ar/geo/aob", Description = "Artimiausio adreso paieška pagal koordinates", Tag = tg1, Method = Method.Get });
-		//app.Attach(new Route<AR_GEOItem>(ARGEO.Gyv) { Path = "/ar/geo/gyv", Description = "Gyvenvietė pagal koordinates", Tag = tg1, Method = Method.Get });
-		//app.Attach(new Route<AR_GEOItem>(ARGEO.Sav) { Path = "/ar/geo/sav", Description = "Savivaldybė pagal koordinates", Tag = tg1, Method = Method.Get });
 		app.Attach(new Route<string>(Sal.Search) {
 			Path = "/salys/search", Description = "Šalies paieška", Tag = tg1, Method = Method.Get,
 			Params = [new("eu") { Description = "Rodyti tik EU šalis" }]
