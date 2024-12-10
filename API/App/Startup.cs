@@ -34,6 +34,8 @@ public static class Startup {
 			Routes = [new RouteGroup("Registrai").Map(new("/info", () => Endpoints) { Name = "Bendra informacija apie registrą" })]
 		});
 
+		builder.Services.AddSwagger(Endpoints);
+
 		builder.Services.ConfigureHttpJsonOptions(a => {
 			a.SerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
 			//a.SerializerOptions.PropertyNamingPolicy=null; 

@@ -6,20 +6,10 @@
 		<RootNamespace>Registrai</RootNamespace>
 		<AssemblyName>Registrai</AssemblyName>
 	</PropertyGroup>
+
 	<ItemGroup>
-	  <Compile Remove="Modules\**" />
-	  <Compile Remove="Shared\**" />
-	  <Content Remove="Modules\**" />
-	  <Content Remove="Shared\**" />
-	  <EmbeddedResource Remove="Modules\**" />
-	  <EmbeddedResource Remove="Shared\**" />
-	  <None Remove="Modules\**" />
-	  <None Remove="Shared\**" />
-	</ItemGroup>
-	
-	<ItemGroup>
-	  <ProjectReference Include="Modules\**\*.csproj" />
-	  <ProjectReference Include="Shared\**\*.csproj" />
+	  <ProjectReference Include="..\Modules\**\*.csproj" />
+	  <ProjectReference Include="..\Shared\**\*.csproj" />
 	</ItemGroup>
 	
 	<ItemGroup>
