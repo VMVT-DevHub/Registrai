@@ -5,6 +5,8 @@ using Registrai.Modules;
 
 
 Startup.AddEndpoint(Registrai.Modules.EvrkRegistras.Init());
+Startup.AddEndpoint(Registrai.Modules.JuridiniuAsmenuRegistras.Init());
+Startup.AddEndpoint(Registrai.Modules.SaliuRegistras.Init());
 
 var app = Startup.Build(args);
 
@@ -15,8 +17,6 @@ DB.Debug = cfg.Data.Debug;
 
 
 app.UseAdresuRegistras();
-app.UseJuridiniuAsmenuRegistras();
-app.UseSaliuRegistras();
 
 app.Run();
 

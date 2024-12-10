@@ -5,9 +5,9 @@ using Registrai.Modules.EVRK.Models;
 
 namespace Registrai.Modules;
 
-/// <summary>Šalių registras</summary>
+/// <summary>EVRK registras</summary>
 public static class EvrkRegistras {
-	/// <summary>Šalių registro inicijavimas</summary>
+	/// <summary>EVRK registro inicijavimas</summary>
 	/// <returns></returns>
 	public static AppRouteEndpoint Init() {
 

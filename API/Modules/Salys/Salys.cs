@@ -7,25 +7,30 @@ namespace Registrai.Modules;
 
 /// <summary>Šalių registras</summary>
 public static class SaliuRegistras {
+	
 	/// <summary>Šalių registro inicijavimas</summary>
-	/// <param name="app"></param>
 	/// <returns></returns>
-	public static WebApplication UseSaliuRegistras(this WebApplication app) {
-
-		var tg1 = "Šalių Registras";
-		app.Attach(new Route<string>(Sal.Search) {
-			Path = "/salys/search", Description = "Šalies paieška", Group = tg1, Method = Method.Get,
-			Params = [new("eu") { Description = "Rodyti tik EU šalis" }]
-		});
-		app.Attach(new Route<string>(Sal.List) { Path = "/salys/list", Description = "Visų šalių informacija", Group = tg1, Method = Method.Get,
-			Params = [new("eu") { Description = "Rodyti tik EU šalis" }, new("desc") { Description = "Rikiuoti mažėjančia tvarka" }]
-		});
-		app.Attach(new Route<string>(Sal.Info) {
-			Path = "/salys/{iso3}", Description = "Šalies informacija", Group = tg1, Method = Method.Get,
-			Params = [new("flag") { Description = "Rodyti šalies vėliavą" }]
-		});
-
-		return app;
+	public static AppRouteEndpoint Init() {
+		var tg1 = "Šalių API";
+		return new() {
+			Name = "Šalių registras",
+			Description = "Pilnas šalių sąrašas su vėliavomis",
+			Tag = "salys",
+			Version = "v1",
+			Routes = [
+				new ("/salys/search", Sal.Search) {
+					Description = "Šalies paieška", Group = tg1, Response=typeof(List<Sal_Item>),
+					Params = [new("eu") { Description = "Rodyti tik EU šalis" }]
+				},
+				new ("/salys/list", Sal.List) {
+					Description = "Visų šalių informacija", Group = tg1, Response=typeof(Sal_List),
+					Params = [new("eu") { Description = "Rodyti tik EU šalis" }, new("desc") { Description = "Rikiuoti mažėjančia tvarka" }]
+				},
+				new ("/salys/{iso3}", Sal.Info) {
+					Description = "Šalies informacija", Group = tg1,  Response=typeof(Sal_Item),
+					Params = [new("flag") { Description = "Rodyti šalies vėliavą" }]
+				}
+			],
+		};
 	}
-
 }

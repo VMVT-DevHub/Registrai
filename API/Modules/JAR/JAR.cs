@@ -8,24 +8,32 @@ namespace Registrai.Modules;
 /// <summary>Juridinių asmenų registras</summary>
 public static class JuridiniuAsmenuRegistras {
 	/// <summary>Juridinių asmenų registro inicijavimas</summary>
-	/// <param name="app"></param>
 	/// <returns></returns>
-	public static WebApplication UseJuridiniuAsmenuRegistras(this WebApplication app) {
+	public static AppRouteEndpoint Init() {
 
-		var tg3 = "Juridinių Asmenų Registras";
-		app.Attach(new Route<JAR_Item>(JARDetails.Detales) {
-			Path = "/jar/details", Description = "Gauti juridinio asmens detales", Group = tg3
-		});
-		app.Attach(new Route<JAR_Search>(JARSearch.FullSearch) {
-			Path = "/jar/search", Description = "Gauti filtruotą juridinių asmenų paieškos resultatą", Group = tg3, Method = Method.Post
-		});
-		app.Attach(new Route<JAR_Search>(JARSearch.GetSrh) {
-			Path = "/jar/search", Description = "Gauti supaprastintą juridinių asmenų paieškos resultatą", Group = tg3,
-			Params = [
-				new("details") { Description = "Rodyti daugiau informacijos" },
-				new("active") { Description = "Tik aktyvūs juridiniai asmenys" }]
-		});
+		var tg1 = "JAR - Vieši duomenys";
 
-		return app;
+		return new() {
+			Name = "Juridinių Asmenų Registras",
+			Description = "Registrų centro Juridinių Asmenų Registras",
+			Tag = "jar",
+			Version = "v1",
+			Routes = [
+				new ("/jar/details", JARDetails.Detales) {
+					Description = "Gauti juridinio asmens detales", Group = tg1, Response=typeof(JAR_Item),
+				},
+				new ("/jar/search", JARSearch.FullSearch) {
+					Description = "Gauti filtruotą juridinių asmenų paieškos resultatą", Group = tg1, Method = Method.Post, Response=typeof(JAR_Search),
+					Params = [new("code") { Description = "Ieškoti pagal kodą" }]
+				},
+				new ("/jar/search", JARSearch.GetSrh) {
+					Description = "Gauti supaprastintą juridinių asmenų paieškos resultatą", Group = tg1,  Response=typeof(JAR_Search),
+					Params = [
+						new("details") { Description = "Rodyti daugiau informacijos" },
+						new("active") { Description = "Tik aktyvūs juridiniai asmenys" }
+					]
+				}
+			],
+		};
 	}
 }

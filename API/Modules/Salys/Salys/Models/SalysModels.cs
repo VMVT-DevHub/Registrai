@@ -1,8 +1,10 @@
-﻿namespace Registrai.Modules.Salys.Models;
+﻿using App;
+
+namespace Registrai.Modules.Salys.Models;
 
 
 /// <summary>Šalių paieškos rezultatas</summary>
-public class Sal_List : List<Sal_Item> { }
+public class Sal_List : DBPagingResponse<Sal_Item> { }
 
 /// <summary>Šalių paieškos įrašo informacijos modelis</summary>
 public class Sal_Item {
