@@ -21,7 +21,24 @@ public static partial class Extensions {
 			_ => app.Map(route.Path, route.Handler),
 		};
 #if DEBUG //Disable Swagger
-		bld.Swagger(route.Summary??"", route.Description, route.Tag, route.Params).Produces<T>(route.Status);
+		bld.Swagger(route).Produces<T>(route.Status);
+		if (route.Errors?.Count > 0) { bld.Errors([.. route.Errors]); }
+#endif
+		return app;
+	}
+
+	public static WebApplication Attach(this WebApplication app, Route2 route) {
+		var bld = route.Method switch {
+			Method.Get => app.MapGet(route.Path, route.Handler),
+			Method.Post => app.MapPost(route.Path, route.Handler),
+			Method.Put => app.MapPut(route.Path, route.Handler),
+			Method.Patch => app.MapPatch(route.Path, route.Handler),
+			Method.Delete => app.MapDelete(route.Path, route.Handler),
+			_ => app.Map(route.Path, route.Handler),
+		};
+#if DEBUG //Disable Swagger
+		
+		bld.Swagger(route).Produces(route.Status, route.Response);
 		if (route.Errors?.Count > 0) { bld.Errors([.. route.Errors]); }
 #endif
 		return app;

@@ -8,28 +8,35 @@ namespace Registrai.Modules;
 /// <summary>Šalių registras</summary>
 public static class EvrkRegistras {
 	/// <summary>Šalių registro inicijavimas</summary>
-	/// <param name="app"></param>
 	/// <returns></returns>
-	public static WebApplication UseEvrkRegistras(this WebApplication app) {
+	public static AppRouteEndpoint Init() {
 
-		var tg1 = "EVRK - Kodų Registras";
-		app.Attach(new Route<Evrk_List>(Evrk.List) {
-			Path = "/evrk/list", Description = "Kodų sąrašas", Tag = tg1, Method = Method.Get,
-			Params = [
-				new("l1") { Description = "Rodyti tik pirmą lygį (parent=\"\")" },
-				new("desc") { Description = "Rikiuoti mažėjančia tvarka" }]
-		});
-		app.Attach(new Route<Evrk_Item>(Evrk.Details) {
-			Path = "/evrk/details", Description = "Įrašo informacija", Tag = tg1, Method = Method.Get,
-			Params = [new("code") { Description = "Ieškoti pagal kodą" }]
-		});
-		app.Attach(new Route<List<Evrk_Item>>(Evrk.DetailsMulti) { Path = "/evrk/details", Description = "Įrašo informacija", Tag = tg1, Method = Method.Post, 
-			Params  = [new("code") { Description = "Ieškoti pagal kodą" }]
-		});
-		app.Attach(new Route<List<Evrk_Item>>(Evrk.Search) {
-			Path = "/evrk/search", Description = "Kodų paieška", Tag = tg1, Method = Method.Get
-		});
-		return app;
+		var tg1 = "EVRK Kodai";
+
+		return new() {
+			Name = "EVRK",
+			Description = "Ekonominės veiklos rūšių klasifikatorius (v2.1)",
+			Tag = "evrk",
+			Version = "v1",
+			Routes = [
+				new ("/evrk/list", Evrk.List) {
+					Description = "Kodų sąrašas", Group = tg1, Method = Method.Get, Response=typeof(Evrk_List),
+					Params = [
+						new("l1") { Description = "Rodyti tik pirmą lygį (parent=\"\")" },
+						new("desc") { Description = "Rikiuoti mažėjančia tvarka" }],
+				},
+				new ("/evrk/details", Evrk.Details) {
+					Description = "Įrašo informacija", Group = tg1, Method = Method.Get, Response=typeof(Evrk_Item),
+					Params = [new("code") { Description = "Ieškoti pagal kodą" }]
+				},
+				new ("/evrk/details", Evrk.DetailsMulti) {
+					Description = "Įrašo informacija", Group = tg1, Method = Method.Post, Response=typeof(List<Evrk_Item>),
+					Params = [new("code") { Description = "Ieškoti pagal kodą" }]
+				},
+				new ("/evrk/search", Evrk.Search ) {
+					Description = "Kodų paieška", Group = tg1, Method = Method.Get, Response=typeof(List<Evrk_Item>),
+				}
+			],
+		};
 	}
-
 }

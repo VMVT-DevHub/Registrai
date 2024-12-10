@@ -14,13 +14,13 @@ public static class JuridiniuAsmenuRegistras {
 
 		var tg3 = "Juridinių Asmenų Registras";
 		app.Attach(new Route<JAR_Item>(JARDetails.Detales) {
-			Path = "/jar/details", Description = "Gauti juridinio asmens detales", Tag = tg3
+			Path = "/jar/details", Description = "Gauti juridinio asmens detales", Group = tg3
 		});
 		app.Attach(new Route<JAR_Search>(JARSearch.FullSearch) {
-			Path = "/jar/search", Description = "Gauti filtruotą juridinių asmenų paieškos resultatą", Tag = tg3, Method = Method.Post
+			Path = "/jar/search", Description = "Gauti filtruotą juridinių asmenų paieškos resultatą", Group = tg3, Method = Method.Post
 		});
 		app.Attach(new Route<JAR_Search>(JARSearch.GetSrh) {
-			Path = "/jar/search", Description = "Gauti supaprastintą juridinių asmenų paieškos resultatą", Tag = tg3,
+			Path = "/jar/search", Description = "Gauti supaprastintą juridinių asmenų paieškos resultatą", Group = tg3,
 			Params = [
 				new("details") { Description = "Rodyti daugiau informacijos" },
 				new("active") { Description = "Tik aktyvūs juridiniai asmenys" }]

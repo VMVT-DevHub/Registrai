@@ -20,7 +20,7 @@ public static partial class Evrk {
 	static readonly List<string> ListFld = ["ID", "Sekcija", "Kodas", "Pavad", "Parent", "Layer", "Last", "search"];
 	static readonly List<string> ListSel = ["ID", "Sekcija", "Kodas", "Pavad", "Parent", "Layer", "Last"];
 
-	/// <summary>Kodų sąrašas</summary>
+	/// <summary>Gauti pilną sąrašą</summary>
 	/// <param name="ctx"></param>
 	/// <param name="page">Puslapis</param>
 	/// <param name="top">Duomenų ribojimas</param>
@@ -43,7 +43,7 @@ public static partial class Evrk {
 		if(string.IsNullOrWhiteSpace(id)) { ctx.Response.E400(true, "Missing id or code"); return; }
 		var qry = $"SELECT id,l1,code,parent,layer,pavad,last FROM public.evrk WHERE {(ctx.ParamTrue("code")?"code":"id")}=@id LIMIT 1;";
 		//  IDs:           0  1  2    3      4     5     6
-		using var db = new DBRead(qry, new() { { "@id", id } });
+		using var db = new DBRead(qry, new() { { "@id", id.ToUpper() } });
 		using var rdr = await db.GetReader();
 		if (await rdr.ReadAsync()) {
 			await ctx.Response.WriteAsJsonAsync(new Evrk_Item() {
@@ -64,7 +64,7 @@ public static partial class Evrk {
 			var qrid = new List<string>();
 			var prm = new Dictionary<string, object?>();
 			var cn = 1;
-			foreach (var i in id) { qrid.Add("@id" + cn); prm["@id" + cn] = i; cn++; }
+			foreach (var i in id) { qrid.Add("@id" + cn); prm["@id" + cn] = i.ToUpper(); cn++; }
 			var qry = $"SELECT id,l1,code,parent,layer,pavad,last FROM public.evrk WHERE {(ctx.ParamTrue("code") ? "code" : "id")} in ({string.Join(',', qrid)});";
 			//  IDs:           0  1  2    3      4     5     6
 			using var db = new DBRead(qry, prm);
@@ -79,9 +79,6 @@ public static partial class Evrk {
 		await ctx.Response.WriteAsJsonAsync(ret);
 	}
 
-
-
-	private static string? MkSerach(this string? q) => q?.RemoveAccents().RemoveNonAlphanumeric().ToLower();
 	/// <summary>Kodų paieška</summary>
 	/// <param name="ctx"></param>
 	/// <param name="q">Paieškos užklausa</param>
@@ -95,7 +92,7 @@ public static partial class Evrk {
 			Select = ListSel,
 			Total = false,
 			Where = new() { Last = true },
-			Search = q.MkSerach()
+			Search = q.RemoveAccents().RemoveNonAlphanumeric().ToLower()
 		}.Execute();
 		await ctx.Response.WriteAsJsonAsync(m.Data);
 	}

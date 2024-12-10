@@ -1,19 +1,48 @@
-﻿using Microsoft.Extensions.Diagnostics.HealthChecks;
+﻿using App.Routing;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 #if DEBUG
 	using Microsoft.OpenApi.Models;
 #endif
 
 namespace App.Routing;
 
+
 public enum Method { Get, Post, Put, Patch, Delete }
 
-public class Route<T>(Delegate hnd) {
+public class AppRouteEndpoint {
+	public string? Name { get; set; } = "EVRK Kodai";
+	public string? Description { get; set; }
+	public string? Version { get; set; } = "v1";
+	public string? Tag { get; set; } = "evrk";
+    public List<Route2>? Routes { get; set; }
+}
+
+
+public class Route<T>(Delegate hnd, string path="") {
 	public string? Summary { get; set; }
 	public Method Method { get; set; } = Method.Get;
-	public string Path { get; set; } = "";
-	public string? Tag { get; set; }
+	public string Path { get; set; } = path;
+	public string? Group { get; set; }
 	public string? Description { get; set; }
 	public int Status { get; set; } = 200;
+	public string Tag { get; set; } = "v1";
+	public Type Type { get; set; }
+	public List<int>? Errors { get; set; }
+	public List<RouteParam>? Params { get; set; }
+	public Delegate Handler { get; set; } = hnd;
+}
+
+
+
+public class Route2(string path, Delegate hnd) {
+	public string? Summary { get; set; }
+	public Method Method { get; set; } = Method.Get;
+	public string Path { get; set; } = path;
+	public string? Group { get; set; }
+	public string? Description { get; set; }
+	public int Status { get; set; } = 200;
+	public string Tag { get; set; } = "v1";
+	public Type Response { get; set; }
 	public List<int>? Errors { get; set; }
 	public List<RouteParam>? Params { get; set; }
 	public Delegate Handler { get; set; } = hnd;
@@ -33,17 +62,31 @@ public class RouteParam(string name) {
 public static class Routing {
 	/// <summary>Extension for route handler to add swagger info for dev environment</summary>
 	/// <param name="rtx">Route handler</param>
-	/// <param name="summary">API Summary</param>
-	/// <param name="desc">API Description</param>
-	/// <param name="tag">API Tag name</param>
+	/// <param name="route">Route details</param>
+	/// <param name="group">Route group name</param>
 	/// <returns>Route handler</returns>
-	public static RouteHandlerBuilder Swagger(this RouteHandlerBuilder rtx, string summary, string? desc = null, string? tag = null, List<RouteParam>? prm = null) {
+	public static RouteHandlerBuilder Swagger<T>(this RouteHandlerBuilder rtx, Route<T> route) {
 #if DEBUG //Disable swagger
 		var op = new Microsoft.OpenApi.Models.OpenApiOperation();
 		rtx.WithOpenApi(o => {
-			o.Summary = summary; o.Description = desc; o.Tags = tag is null ? null : [new() { Name = tag }];
-			if (prm is not null) foreach (var i in prm) o.Parameters.Add(i.GetParam()); return o;
+			o.Summary = route.Summary; o.Description = route.Description; o.Tags = route.Group is null ? null : [new() { Name = route.Group }];
+			if (route.Params is not null) foreach (var i in route.Params) o.Parameters.Add(i.GetParam()); return o;
 		});
+		rtx.WithMetadata(new EndpointGroupNameAttribute(route.Tag));
+
+#endif
+		return rtx;
+	}
+
+	public static RouteHandlerBuilder Swagger(this RouteHandlerBuilder rtx, Route2 route) {
+#if DEBUG //Disable swagger
+		var op = new Microsoft.OpenApi.Models.OpenApiOperation();
+		rtx.WithOpenApi(o => {
+			o.Summary = route.Summary; o.Description = route.Description; o.Tags = route.Group is null ? null : [new() { Name = route.Group }];
+			if (route.Params is not null) foreach (var i in route.Params) o.Parameters.Add(i.GetParam()); return o;
+		});
+		rtx.WithMetadata(new EndpointGroupNameAttribute(route.Tag));
+
 #endif
 		return rtx;
 	}
