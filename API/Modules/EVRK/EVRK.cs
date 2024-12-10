@@ -1,42 +1,33 @@
 ﻿using App.Routing;
-using Microsoft.AspNetCore.Builder;
-using Registrai.Modules.EVRK.Methods;
-using Registrai.Modules.EVRK.Models;
+using Registrai.Modules.EVRK;
 
 namespace Registrai.Modules;
 
-/// <summary>EVRK registras</summary>
-public static class EvrkRegistras {
-	/// <summary>EVRK registro inicijavimas</summary>
+/// <summary>Registro inicijavimas</summary>
+public class EvrkRegistras {
+	/// <summary>EVRK Maršrutų priskyrimas</summary>
 	/// <returns></returns>
-	public static AppRouteEndpoint Init() {
-
-		var tg1 = "EVRK Kodai";
-
-		return new() {
-			Name = "EVRK",
-			Description = "Ekonominės veiklos rūšių klasifikatorius (v2.1)",
-			Tag = "evrk",
-			Version = "v1",
-			Routes = [
-				new ("/evrk/list", Evrk.List) {
-					Description = "Kodų sąrašas", Group = tg1, Method = Method.Get, Response=typeof(Evrk_List),
-					Params = [
-						new("l1") { Description = "Rodyti tik pirmą lygį (parent=\"\")" },
-						new("desc") { Description = "Rikiuoti mažėjančia tvarka" }],
-				},
-				new ("/evrk/details", Evrk.Details) {
-					Description = "Įrašo informacija", Group = tg1, Method = Method.Get, Response=typeof(Evrk_Item),
+	public static RouteDefinition Route() => new("EVRK") {
+		Description = "Ekonominės veiklos rūšių klasifikatorius (v2.1)",
+		Tag = "evrk", Version = "v1",
+		Routes = [
+			new RouteGroup("EVRK Kodai")
+				.Map(new("/evrk/list", Evrk.List){
+					Name = "Kodų sąrašas", Response=typeof(Evrk_List),
+					Params = [new("l1") { Description = "Rodyti tik pirmą lygį (parent=\"\")" }, new("desc") { Description = "Rikiuoti mažėjančia tvarka" }],
+				})
+				.Map(new("/evrk/details", Evrk.Details){
+					Name= "Įrašo informacija", Response = typeof(Evrk_Item),
 					Params = [new("code") { Description = "Ieškoti pagal kodą" }]
-				},
-				new ("/evrk/details", Evrk.DetailsMulti) {
-					Description = "Įrašo informacija", Group = tg1, Method = Method.Post, Response=typeof(List<Evrk_Item>),
+				})
+				.Map(new("/evrk/details", Evrk.DetailsMulti){
+					Name= "Įrašo informacija", Response = typeof(List<Evrk_Item>), Method=Method.Post,
 					Params = [new("code") { Description = "Ieškoti pagal kodą" }]
-				},
-				new ("/evrk/search", Evrk.Search ) {
-					Description = "Kodų paieška", Group = tg1, Method = Method.Get, Response=typeof(List<Evrk_Item>),
-				}
+				})
+				.Map(new("/evrk/search", Evrk.Search){
+					Name= "Kodų paieška", Response = typeof(List<Evrk_Item>),
+					Params = [new("code") { Description = "Ieškoti pagal kodą" }]
+				})
 			],
-		};
-	}
+	};
 }

@@ -1,49 +1,49 @@
 ﻿using App.Routing;
-using Microsoft.AspNetCore.Builder;
 using Registrai.Modules.AR.Methods;
 using Registrai.Modules.AR.Models;
 
 namespace Registrai.Modules;
 
-/// <summary>Adresų registras</summary>
-public static class AdresuRegistras {
-	/// <summary>Adresų registro inicijavimas</summary>
-	/// <param name="app"></param>
+/// <summary>Registro inicijavimas</summary>
+public class AdresuRegistras {
+	private static readonly List<RouteParam> Prdsc = [new("desc") { Description = "Rikiavimas mažėjančiai" }];
+	/// <summary>Adresų registro maršrutų priskyrimas</summary>
 	/// <returns></returns>
-	public static WebApplication UseAdresuRegistras(this WebApplication app) {
+	public static RouteDefinition Route() => new("Adresai") {
+		Description = "Registrų centro adresų registras su GEO duomenimis",
+		Tag = "ar", Version = "v1",
+		Routes = [
+			new RouteGroup("Įrašo detalės")
+				.Map(new("/ar/details", ARDetails.Detales){ Name = "Gauti adreso detales", Response=typeof(AR_Item) }),
 
-		var tg1 = "Adresų Registras - Visi duomenys";
-		app.Attach(new Route<AR_List>(ARLists.Adm) { Path = "/ar/list/adm", Description = "Apskričių sąrašas", Group = tg1 });
-		app.Attach(new Route<AR_List>(ARLists.Sav) { Path = "/ar/list/sav", Description = "Savivaldybių sąrašas", Group = tg1 });
-		app.Attach(new Route<AR_List>(ARLists.Sen) { Path = "/ar/list/sen", Description = "Seniunijų sąrašas", Group = tg1 });
-		app.Attach(new Route<AR_List>(ARLists.Gyv) { Path = "/ar/list/gyv", Description = "Gyvenviečių sąrašas", Group = tg1 });
-		app.Attach(new Route<AR_List>(ARLists.Gat) { Path = "/ar/list/gat", Description = "Gatvių sąrašas", Group = tg1 });
-		app.Attach(new Route<AR_List>(ARLists.Aob) { Path = "/ar/list/aob", Description = "Adresų sąrašas", Group = tg1 });
-		app.Attach(new Route<AR_List>(ARLists.Pat) { Path = "/ar/list/pat", Description = "Patalpų sąrašas", Group = tg1 });
-		app.Attach(new Route<AR_List>(ARLists.Filter) { Path = "/ar/list", Description = "Gauti filtruotą sąrašų rezultatą", Group = tg1, Method = Method.Post });
+			new RouteGroup("Visi duomenys")
+				.Map(new("/ar/list/adm", ARLists.Adm){ Name = "Apskričių sąrašas", Response=typeof(AR_List), Params=Prdsc })
+				.Map(new("/ar/list/sav", ARLists.Sav){ Name = "Savivaldybių sąrašas", Response=typeof(AR_List), Params=Prdsc })
+				.Map(new("/ar/list/sen", ARLists.Sen){ Name = "Seniunijų sąrašas", Response=typeof(AR_List), Params=Prdsc })
+				.Map(new("/ar/list/gyv", ARLists.Gyv){ Name = "Gyvenviečių sąrašas", Response=typeof(AR_List), Params=Prdsc })
+				.Map(new("/ar/list/gat", ARLists.Gat){ Name = "Gatvių sąrašas", Response=typeof(AR_List), Params=Prdsc })
+				.Map(new("/ar/list/aob", ARLists.Aob){ Name = "Adresų sąrašas", Response=typeof(AR_List), Params=Prdsc })
+				.Map(new("/ar/list/pat", ARLists.Pat){ Name = "Patalpų sąrašas", Response=typeof(AR_List), Params=Prdsc })
+				.Map(new("/ar/list",     ARLists.Filter, Method.Post){ Name = "Gauti filtruotą sąrašų rezultatą", Response=typeof(AR_List) }),
 
-		var tg2 = "Adresų Registras - Paieška";
-		app.Attach(new Route<AR_Search>(ARSearch.Sav) { Path = "/ar/search/sav", Description = "Savivaldybių paieška", Group = tg2, Method = Method.Get });
-		app.Attach(new Route<AR_Search>(ARSearch.Sen) { Path = "/ar/search/sen", Description = "Seniunijų paieška", Group = tg2, Method = Method.Get });
-		app.Attach(new Route<AR_Search>(ARSearch.Gyv) { Path = "/ar/search/gyv", Description = "Gyvenviečių paieška", Group = tg2, Method = Method.Get });
-		app.Attach(new Route<AR_Search>(ARSearch.Gat) { Path = "/ar/search/gat", Description = "Gatvių paieška", Group = tg2, Method = Method.Get });
-		app.Attach(new Route<AR_Search>(ARSearch.Aob) { Path = "/ar/search/aob", Description = "Adresų paieška", Group = tg2, Method = Method.Get });
-		app.Attach(new Route<AR_Search>(ARSearch.Adr) { Path = "/ar/search/adr", Description = "išplėstinė adresų paieška pagal gatvę, adresą ir patalpą", Group = tg2, Method = Method.Get });
-		app.Attach(new Route<AR_Search>(ARSearch.FullSearch) { Path = "/ar/search", Description = "Gauti filtruotą adresų paieškos resultatą", Group = tg2, Method = Method.Post });
+			new RouteGroup("Detali paieška")
+				.Map(new("/ar/search/sav", ARSearch.Sav){ Name = "Savivaldybių paieška", Response=typeof(AR_Search) })
+				.Map(new("/ar/search/sen", ARSearch.Sen){ Name = "Seniunijų paieška", Response=typeof(AR_Search) })
+				.Map(new("/ar/search/gyv", ARSearch.Gyv){ Name = "Gyvenviečių paieška", Response=typeof(AR_Search) })
+				.Map(new("/ar/search/gat", ARSearch.Gat){ Name = "Gatvių paieška", Response=typeof(AR_Search) })
+				.Map(new("/ar/search/aob", ARSearch.Aob){ Name = "Adresų paieška", Response=typeof(AR_Search) })
+				.Map(new("/ar/search",     ARSearch.FullSearch, Method.Post){ Name = "Gauti filtruotą adresų paieškos resultatą", Response=typeof(AR_Search) }),
 
-		var tg3 = "Adresų Registras - Geografinė Paieška";
-		app.Attach(new Route<AR_GEO>(ARGEO.AobSearch) { Path = "/ar/geo/aob", Description = "Artimiausio adreso paieška pagal koordinates", Group = tg3, Method = Method.Get });
-		app.Attach(new Route<AR_GEOItem>(ARGEO.Gyv) { Path = "/ar/geo/gyv", Description = "Gyvenvietė pagal koordinates", Group = tg3, Method = Method.Get });
-		app.Attach(new Route<AR_GEOItem>(ARGEO.Sav) { Path = "/ar/geo/sav", Description = "Savivaldybė pagal koordinates", Group = tg3, Method = Method.Get });
+			new RouteGroup("Geografinė paieška")
+				.Map(new("/ar/geo/aob", ARGEO.AobSearch){ Name = "Artimiausio adreso paieška pagal koordinates", Response=typeof(AR_GEO) })
+				.Map(new("/ar/geo/gyv", ARGEO.Gyv){ Name = "Gyvenvietė pagal koordinates", Response=typeof(AR_GEOItem) })
+				.Map(new("/ar/geo/sav", ARGEO.Sav){ Name = "Savivaldybė pagal koordinates", Response=typeof(AR_GEOItem) }),
 
-		var tg4 = "Adresų Registras - Įrašo detalės";
-		app.Attach(new Route<AR_Item>(ARDetails.Detales) { Path = "/ar/details", Description = "Gauti adreso detales", Group = tg4 });
+			new RouteGroup("Greita paieška")
+				.Map(new("/ar/find/gyv",   ARSearch.FGyv){ Name = "Greita gyvenviečių paieška", Response=typeof(AR_Search) })
+				.Map(new("/ar/find/adr",   ARSearch.FAdr){ Name = "Adresų paieška pagal gatvę, adresą ir/ar patalpą", Response=typeof(AR_Search) })
+				.Map(new("/ar/search/adr", ARSearch.Adr) { Name = "išplėstinė adresų paieška pagal gatvę, adresą ir patalpą", Response=typeof(AR_Search) }),
 
-		var tg5 = "Adresų Registras - Greita paieška";
-		app.Attach(new Route<AR_Search>(ARSearch.FGyv) { Path = "/ar/find/gyv", Summary="blet", Description = "Greita gyvenviečių paieška", Group = tg5, Method = Method.Get });
-		app.Attach(new Route<AR_Search>(ARSearch.FAdr) { Path = "/ar/find/adr", Description = "Adresų paieška pagal gatvę, adresą ir/ar patalpą", Group = tg5, Method = Method.Get });
-
-		return app;
-	}
-
+			],
+	};
 }

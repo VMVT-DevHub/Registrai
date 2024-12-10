@@ -18,17 +18,12 @@
 	</ItemGroup>
 	
 	<ItemGroup>
-		<Content Update="appsettings.json" CopyToPublishDirectory="Never" />
+	  <ProjectReference Include="Modules\**\*.csproj" />
+	  <ProjectReference Include="Shared\**\*.csproj" />
 	</ItemGroup>
-
-
+	
 	<ItemGroup>
-	  <ProjectReference Include="Modules\AR\AR.csproj" />
-	  <ProjectReference Include="Modules\EVRK\EVRK.csproj" />
-	  <ProjectReference Include="Modules\JAR\JAR.csproj" />
-	  <ProjectReference Include="Modules\Salys\Salys.csproj" />
-	  <ProjectReference Include="Shared\Npgsql\Npgsql.csproj" />
-	  <ProjectReference Include="Shared\Routing\Routing.csproj" />
+		<Content Update="appsettings.json" CopyToPublishDirectory="Never" />
 	</ItemGroup>
 
 	<PropertyGroup Condition="'$(Configuration)'=='Debug'">

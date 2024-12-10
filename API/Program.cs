@@ -1,12 +1,23 @@
 ﻿using App;
-using App.Routing;
 using Registrai.App;
+
+
 using Registrai.Modules;
 
 
-Startup.AddEndpoint(Registrai.Modules.EvrkRegistras.Init());
-Startup.AddEndpoint(Registrai.Modules.JuridiniuAsmenuRegistras.Init());
-Startup.AddEndpoint(Registrai.Modules.SaliuRegistras.Init());
+using Registrai.Modules.JAR;
+using Registrai.Modules.Salys;
+using Registrai.Modules.EVRK;
+
+
+Startup.Routes(
+	JuridiniuAsmenuRegistras.Route(),
+	AdresuRegistras.Route(),
+	SaliuRegistras.Route(),
+	EvrkRegistras.Route()
+);
+
+
 
 var app = Startup.Build(args);
 
@@ -15,8 +26,6 @@ var cfg = new Configuration();
 DB.ConnStr = cfg.Data.ConnString;
 DB.Debug = cfg.Data.Debug;
 
-
-app.UseAdresuRegistras();
 
 app.Run();
 

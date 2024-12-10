@@ -13,7 +13,6 @@
 		<ProjectReference Include="..\..\Shared\Routing\Routing.csproj" />
 	</ItemGroup>
 
-
 	<PropertyGroup Condition="'$(Configuration)'=='Debug'">
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 	</PropertyGroup>

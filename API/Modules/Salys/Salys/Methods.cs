@@ -1,13 +1,12 @@
 ﻿using App;
 using App.Routing;
 using Microsoft.AspNetCore.Http;
-using Registrai.Modules.Salys.Models;
 using System.ComponentModel;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace Registrai.Modules.Salys.Methods;
+namespace Registrai.Modules.Salys;
 
 /// <summary>Adreso detalių gavimo metodas</summary>
 public static partial class Sal {

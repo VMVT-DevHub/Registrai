@@ -6,43 +6,84 @@ namespace App.Routing;
 
 /// <summary>Plėtiniai</summary>
 public static partial class Extensions {
-	/// <summary>Pridėti API maršrutą</summary>
-	/// <typeparam name="T">Atsakymo tipas</typeparam>
-	/// <param name="app"></param>
-	/// <param name="route">Maršrutas</param>
-	/// <returns></returns>
-	public static WebApplication Attach<T>(this WebApplication app, Route<T> route) {
-		var bld = route.Method switch {
-			Method.Get => app.MapGet(route.Path, route.Handler),
-			Method.Post => app.MapPost(route.Path, route.Handler),
-			Method.Put => app.MapPut(route.Path, route.Handler),
-			Method.Patch => app.MapPatch(route.Path, route.Handler),
-			Method.Delete => app.MapDelete(route.Path, route.Handler),
-			_ => app.Map(route.Path, route.Handler),
-		};
+
+	public static void UseRouteEndpoints(this WebApplication app, List<RouteDefinition> routes) {
 #if DEBUG //Disable Swagger
-		bld.Swagger(route).Produces<T>(route.Status);
-		if (route.Errors?.Count > 0) { bld.Errors([.. route.Errors]); }
+		app.UseSwagger();
+		app.UseSwaggerUI(c => {
+			foreach (var i in routes) {
+				c.SwaggerEndpoint($"/swagger/{i.Path}/swagger.json", i.Name + " " + i.Version);
+			}
+		});
 #endif
-		return app;
+
+		foreach (var i in routes) {
+			var eps = 0;
+			foreach (var j in i.Routes) {
+				foreach (var k in j.Routes) {
+					var m = app.Attach(k); eps++;
+#if DEBUG //Disable Swagger
+					m.Produces(k.Status, k.Response)
+					.WithOpenApi(o => {
+						o.Summary = k.Summary; o.Description = k.Name; o.Tags = [new() { Name = j.Name }];
+						if (k.Params is not null) foreach (var i in k.Params) o.Parameters.Add(i.GetParam()); return o;
+					}).WithMetadata(new EndpointGroupNameAttribute($"{i.Path}"));
+					if (k.Errors?.Count > 0) { m.Errors([.. k.Errors]); }
+#endif
+				}
+			}
+			Console.WriteLine($"Endpoint: {i.Name} {i.Path} / {eps}");
+		}
 	}
 
-	public static WebApplication Attach(this WebApplication app, Route2 route) {
-		var bld = route.Method switch {
-			Method.Get => app.MapGet(route.Path, route.Handler),
-			Method.Post => app.MapPost(route.Path, route.Handler),
-			Method.Put => app.MapPut(route.Path, route.Handler),
-			Method.Patch => app.MapPatch(route.Path, route.Handler),
-			Method.Delete => app.MapDelete(route.Path, route.Handler),
-			_ => app.Map(route.Path, route.Handler),
-		};
+
+	public static IServiceCollection AddSwagger(this IServiceCollection services, List<RouteDefinition> routes) {
+
 #if DEBUG //Disable Swagger
-		
-		bld.Swagger(route).Produces(route.Status, route.Response);
-		if (route.Errors?.Count > 0) { bld.Errors([.. route.Errors]); }
+		services.AddEndpointsApiExplorer();
+		services.AddSwaggerGen(c => {
+			foreach (var i in routes)
+				c.SwaggerDoc($"{i.Path}", new() { Title = i.Name, Version = i.Version, Description = i.Description });
+			foreach (var i in Directory.GetFiles(AppContext.BaseDirectory, "*.xml"))
+				c.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, i));
+		});
 #endif
-		return app;
+		return services;
 	}
+
+	public static RouteHandlerBuilder Attach(this WebApplication app, Route route) => route.Method switch {
+		Method.Get => app.MapGet(route.Path, route.Handler),
+		Method.Post => app.MapPost(route.Path, route.Handler),
+		Method.Put => app.MapPut(route.Path, route.Handler),
+		Method.Patch => app.MapPatch(route.Path, route.Handler),
+		Method.Delete => app.MapDelete(route.Path, route.Handler),
+		_ => app.Map(route.Path, route.Handler),
+	};
+
+	/// <summary>Registruoti API atsakymo klaidas</summary>
+	/// <param name="builder"></param><param name="err"></param><returns></returns>
+	public static RouteHandlerBuilder Errors(this RouteHandlerBuilder builder, params int[] err) {
+		foreach (var i in err) {
+			switch (i) {
+				case 401: builder.Produces<E401>(401); break;
+				case 403: builder.Produces<E403>(403); break;
+				case 404: builder.Produces<E404>(404); break;
+				case 422: builder.Produces<E422>(422); break;
+			}
+		}
+		return builder;
+	}
+
+	/// <summary>Registruoti API atsakymo formatą</summary>
+	/// <typeparam name="T">Formatas</typeparam><param name="builder"></param><returns></returns>
+	public static RouteHandlerBuilder Response<T>(this RouteHandlerBuilder builder) => builder.Produces<T>(200);
+
+	/// <summary>Registruoti API atsakymo formatą</summary>
+	/// <typeparam name="T">Formatas</typeparam><param name="builder"></param>
+	/// <param name="main">Pagrindinis atsakymo statusas</param>
+	/// <param name="err">Klaidos kodai</param><returns></returns>
+	public static RouteHandlerBuilder Response<T>(this RouteHandlerBuilder builder, int main = 200, params int[] err) => builder.Produces<T>(main).Errors(err);
+
 
 	public static bool ParamTrue(this HttpContext ctx, string prm) => ctx.Request.Query.TryGetValue(prm, out var flg) && (string.IsNullOrEmpty(flg) || flg == "1" || (bool.TryParse(flg, out var b3) && b3));
 	public static bool ParamNull(this HttpContext ctx, string prm) => !ctx.Request.Query.TryGetValue(prm, out var flg) || string.IsNullOrEmpty(flg);
