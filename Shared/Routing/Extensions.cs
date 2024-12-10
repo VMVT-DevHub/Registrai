@@ -25,7 +25,7 @@ public static partial class Extensions {
 #if DEBUG //Disable Swagger
 					m.Produces(k.Status, k.Response)
 					.WithOpenApi(o => {
-						o.Summary = k.Summary; o.Description = k.Name; o.Tags = [new() { Name = j.Name }];
+						o.Summary = k.Summary; o.Description = k.Name; o.Tags = [new() { Name = j.Name }]; o.Deprecated = k.Deprecated ?? false;
 						if (k.Params is not null) foreach (var i in k.Params) o.Parameters.Add(i.GetParam()); return o;
 					}).WithMetadata(new EndpointGroupNameAttribute($"{i.Path}"));
 					if (k.Errors?.Count > 0) { m.Errors([.. k.Errors]); }

@@ -92,7 +92,7 @@ public static class ARSearch {
 	/// <param name="top">Duomenų ribojimas</param>
 	/// <returns></returns>
 	public static async Task Aob(HttpContext ctx, int gyv, string q, int top = 10) => await ctx.Response.WriteAsJsonAsync(await GetSrh(q, top, "aob", gyv));
-	/// <summary>Adresų paieška (GAT+AOB+PAT)</summary>
+	/// <summary>7 - Adresų paieška (GAT+AOB+PAT)</summary>
 	/// <param name="ctx"></param>
 	/// <param name="gyv">Gyvenvietės kodas</param>
 	/// <param name="q">Paieškos frazė</param>

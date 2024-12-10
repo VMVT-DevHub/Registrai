@@ -1,12 +1,6 @@
-﻿using System;
-using System.Runtime.CompilerServices;
-using System.Text.Json;
+﻿using App.Routing;
 using System.Text.Json.Serialization;
-using App.Routing;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.AspNetCore.Routing;
-using Registrai.Modules;
 
 namespace Registrai.App;
 

@@ -32,6 +32,7 @@ public class AdresuRegistras {
 				.Map(new("/ar/search/gyv", ARSearch.Gyv){ Name = "Gyvenviečių paieška", Response=typeof(AR_Search) })
 				.Map(new("/ar/search/gat", ARSearch.Gat){ Name = "Gatvių paieška", Response=typeof(AR_Search) })
 				.Map(new("/ar/search/aob", ARSearch.Aob){ Name = "Adresų paieška", Response=typeof(AR_Search) })
+				.Map(new("/ar/search/adr", ARSearch.Adr) { Deprecated=true, Name = "Naudoti <b>/ar/find/adr</b>", Response=typeof(AR_Search) })
 				.Map(new("/ar/search",     ARSearch.FullSearch, Method.Post){ Name = "Gauti filtruotą adresų paieškos resultatą", Response=typeof(AR_Search) }),
 
 			new RouteGroup("Geografinė paieška")
@@ -41,9 +42,7 @@ public class AdresuRegistras {
 
 			new RouteGroup("Greita paieška")
 				.Map(new("/ar/find/gyv",   ARSearch.FGyv){ Name = "Greita gyvenviečių paieška", Response=typeof(AR_Search) })
-				.Map(new("/ar/find/adr",   ARSearch.FAdr){ Name = "Adresų paieška pagal gatvę, adresą ir/ar patalpą", Response=typeof(AR_Search) })
-				.Map(new("/ar/search/adr", ARSearch.Adr) { Name = "išplėstinė adresų paieška pagal gatvę, adresą ir patalpą", Response=typeof(AR_Search) }),
-
+				.Map(new("/ar/find/adr",   ARSearch.FAdr){ Name = "Adresų paieška pagal gatvę, adresą ir/ar patalpą", Response=typeof(AR_Search) }),
 			],
 	};
 }

@@ -1,17 +1,7 @@
-﻿using App.Routing;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
-using System.Reflection;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 #if DEBUG
 	using Microsoft.OpenApi.Models;
 #endif
-
-using System;
-using System.Runtime.CompilerServices;
-using System.Text.Json;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.AspNetCore.Routing;
 
 namespace App.Routing;
 
@@ -41,6 +31,7 @@ public class Route(string path, Delegate hnd, Method method = Method.Get) {
 	public int Status { get; set; } = 200;
 	[JsonIgnore] public Type? Response { get; set; }
 	public List<int>? Errors { get; set; }
+	public bool? Deprecated { get; set; }
 	[JsonIgnore] public List<RouteParam>? Params { get; set; }
 	[JsonIgnore] public Delegate Handler { get; set; } = hnd;
 }
