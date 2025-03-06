@@ -4,12 +4,16 @@ using System.Text.Json;
 namespace Registrai.App { 
 
 	/// <summary>Sistemos konfigūracija</summary>
-	public class Configuration : Config<ConfigData> { }
+	public class Configuration : Config<ConfigData> {
+	
+	}
 	namespace Config {
 		/// <summary>Konfigūracijos duomenų modelis</summary>
 		public class ConfigData {
-			/// <summary>Duomenų bazės prisijungimo tekstas</summary>
-			public string ConnString { get; set; } = "User ID=postgres; Password=postgres; Server=localhost:5432; Database=master;";
+			/// <summary>Pagrindinis duomenų bazės prisijungimo tekstas</summary>
+			public string ConnString { get; set; } = "";
+			/// <summary>EMA duomenų bazės prisijungimas</summary>
+			public string ConnVVR { get; set; } = "";
 			/// <summary>Spausdinti klaidas konsolėje</summary>
 			public bool PrintOutput { get; set; } = true;
 			/// <summary>Spausdinti klaidas konsolėje</summary>

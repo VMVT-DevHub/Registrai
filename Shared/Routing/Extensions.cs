@@ -87,6 +87,9 @@ public static partial class Extensions {
 
 	public static bool ParamTrue(this HttpContext ctx, string prm) => ctx.Request.Query.TryGetValue(prm, out var flg) && (string.IsNullOrEmpty(flg) || flg == "1" || (bool.TryParse(flg, out var b3) && b3));
 	public static bool ParamNull(this HttpContext ctx, string prm) => !ctx.Request.Query.TryGetValue(prm, out var flg) || string.IsNullOrEmpty(flg);
+	public static int ParamInt(this HttpContext ctx, string prm) => ctx.Request.Query.TryGetValue(prm, out var flg) && !string.IsNullOrEmpty(flg) && int.TryParse(flg, out var num) ? num : 0;
+	public static int? ParamIntN(this HttpContext ctx, string prm) => ctx.Request.Query.TryGetValue(prm, out var flg) && !string.IsNullOrEmpty(flg) && int.TryParse(flg, out var num) ? num : null;
+	public static string? ParamString(this HttpContext ctx, string prm) => ctx.Request.Query.TryGetValue(prm, out var flg) ? flg.FirstOrDefault() : null;
 
 
 	public static int Limit(this int num, int max) => num > max ? max : num;
