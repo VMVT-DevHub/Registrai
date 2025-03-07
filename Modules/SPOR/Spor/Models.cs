@@ -14,7 +14,9 @@ public class SporLoc_Item {
 	/// <summary>Organizacijos ID</summary>
 	public string? OrgID { get; set; }
 	/// <summary>Organizacijos pavadinimas</summary>
-	public string? OrgName { get; set; }
+	public string? OrgNameEn { get; set; }
+	/// <summary>Organizacijos lietuviškas pavadinimas</summary>
+	public string? OrgNameLt { get; set; }
 	/// <summary>Adresas anglų kalba</summary>
 	public SporLoc_ItemLang? En { get; set; }
 	/// <summary>Adresas lietuvių kalba</summary>
@@ -23,32 +25,49 @@ public class SporLoc_Item {
 	public bool? Inactive { get; set; }
 }
 
+/// <summary>Adreso informacija</summary>
 public class SporLoc_ItemLang {
-	public string? country { get; set; }
-	public string? city { get; set; }
-	public string? state { get; set; }
-	public string? county { get; set; }
-	public string? address { get; set; }
+	/// <summary>Šalis</summary>
+	public string? Country { get; set; }
+	/// <summary>Miestas</summary>
+	public string? City { get; set; }
+	/// <summary>Valstija</summary>
+	public string? State { get; set; }
+	/// <summary>Apskritis</summary>
+	public string? County { get; set; }
+	/// <summary>Adresas</summary>
+	public string? Address { get; set; }
 }
 
-/// <summary>Evrk sąrašo rezultatas</summary>
-public class Evrk_List : DBPagingResponse<Evrk_Item> { }
 
-/// <summary>EVRK įrašo informacijos modelis</summary>
-public class Evrk_Item
-{
-    /// <summary>Identifikacinis numeris</summary>
-    public string? ID { get; set; }
-    /// <summary>Pirminė kodo sekcija</summary>
-    public string? Sekcija { get; set; }
-    /// <summary>Kodas</summary>
-    public string? Kodas { get; set; }
-    /// <summary>Pilnas pavadinimas</summary>
-    public string? Pavad { get; set; }
-    /// <summary>Aukštesnio lygio kodas</summary>
-    public string? Parent { get; set; }
-    /// <summary>Lygmens numeris</summary>
-    public int? Layer { get; set; }
-    /// <summary>Paskutinis kodas, gali</summary>
-    public bool? Last { get; set; }
+/// <summary>SPOR organizacijų sąrašo rezultatas</summary>
+public class SporOrg_List : DBPagingResponse<SporOrg_Item> { }
+
+/// <summary>SPOR organizacijos įrašo informacijos modelis</summary>
+public class SporOrg_Item {
+	/// <summary>Identifikacinis numeris</summary>
+	public string? ID { get; set; }
+	/// <summary>Organizacijos pavadinimas</summary>
+	public string? NameEn { get; set; }
+	/// <summary>Organizacijos lietuviškas pavadinimas</summary>
+	public string? NameLt { get; set; }
+	/// <summary>Šalies kodas (ISO2)</summary>
+	public string? Country { get; set; }
+	/// <summary>Lokacijų skaičius</summary>
+	public int? Locations { get; set; }
+	/// <summary>Neaktyvi organizacija</summary>
+	public bool? Inactive { get; set; }
+}
+
+
+
+
+public class SporRef_ListsList : DBPagingResponse<SporRef_ListItem> { }
+public class SporRef_ListItem {
+	public long? ID { get; set; }
+	public string? Name { get; set; }
+	public string? Short { get; set; }
+	public string? Description { get; set; }
+	public string? Domain { get; set; }
+	public int? Terms { get; set; }
 }
