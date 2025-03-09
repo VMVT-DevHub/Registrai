@@ -31,7 +31,7 @@ public class SporRegistras {
 			//	}),
 			new RouteGroup("References")
 				.Map(new("/spor/references/lists", SporReferences.List){
-					Name = "Sąrašai", Response=typeof(SporRef_ListsList),
+					Name = "Sąrašai", Response=typeof(References_ListsList),
 					Params = [
 						new("page") { Description = "Puslapio numeris", Type=RouteParamType.Integer },
 						new("limit") { Description = "Įrašų skaičius puslapyje", Type=RouteParamType.Integer },
@@ -39,11 +39,38 @@ public class SporRegistras {
 						new("desc") { Description = "Rikiuoti mažėjančia tvarka" }],
 				})
 				.Map(new ("/spor/references/list/{id}", SporReferences.ListItem) {
-					Name = "Sąrašo informacija pagal ID", Response=typeof(SporRef_ListItem)
+					Name = "Sąrašo informacija pagal ID", Response=typeof(References_ListItem),
+					Params = [
+						new("terms") { Description = "Rodyti sąrašo terminus" }
+					]
+				})
+				.Map(new("/spor/references/terms", SporReferences.TermList){
+					Name = "Sąrašai", Response=typeof(References_TermList),
+					Params = [
+						new("page") { Description = "Puslapio numeris", Type=RouteParamType.Integer },
+						new("limit") { Description = "Įrašų skaičius puslapyje", Type=RouteParamType.Integer },
+						new("list") { Description = "Filtruoti pagal sąrašą", Type=RouteParamType.Integer },
+						new("parent") { Description = "Filtruoti pagal aukštesnio lygio terminą", Type=RouteParamType.Integer },
+						new("inactive") { Description = "Rodyti neaktyvius terminus" },
+						new("order") { Description = "Rikiuoti pagal", Type=RouteParamType.String },
+						new("desc") { Description = "Rikiuoti mažėjančia tvarka" }],
+				})
+				.Map(new ("/spor/references/term/{id}", SporReferences.TermItem) {
+					Name = "Termino informacija pagal ID", Response=typeof(References_TermItem)
+				})
+				.Map(new("/spor/references/term/find", SporReferences.TermFind){
+					Name = "Organizacijų paieška", Response=typeof(References_TermList),
+					Params = [
+						new("q") { Description = "Paieškos frazė", Type=RouteParamType.String },
+						new("limit") { Description = "Įrašų skaičius puslapyje", Type=RouteParamType.Integer },
+						new("list") { Description = "Filtruoti pagal sąrašą", Type=RouteParamType.Integer },
+						new("inactive") { Description = "Rodyti neaktyvius terminus" },
+						new("order") { Description = "Rikiuoti pagal", Type=RouteParamType.String },
+						new("desc") { Description = "Rikiuoti mažėjančia tvarka" }],
 				}),
 			new RouteGroup("Organisations")
 				.Map(new("/spor/organisations", SporOrganisations.List){
-					Name = "Organizacijų sąrašas", Response=typeof(SporOrg_List),
+					Name = "Organizacijų sąrašas", Response=typeof(Organisation_List),
 					Params = [
 						new("page") { Description = "Puslapio numeris", Type=RouteParamType.Integer },
 						new("limit") { Description = "Įrašų skaičius puslapyje", Type=RouteParamType.Integer },
@@ -53,7 +80,7 @@ public class SporRegistras {
 						new("desc") { Description = "Rikiuoti mažėjančia tvarka" }],
 				})
 				.Map(new("/spor/organisations/find", SporOrganisations.Find){
-					Name = "Organizacijų paieška", Response=typeof(SporOrg_List),
+					Name = "Organizacijų paieška", Response=typeof(Organisation_List),
 					Params = [
 						new("q") { Description = "Paieškos frazė", Type=RouteParamType.String },
 						new("limit") { Description = "Įrašų skaičius puslapyje", Type=RouteParamType.Integer },
@@ -63,11 +90,11 @@ public class SporRegistras {
 						new("desc") { Description = "Rikiuoti mažėjančia tvarka" }],
 				})
 				.Map(new ("/spor/organisation/{id}", SporOrganisations.Item) {
-					Name = "Gauti organizaciją pagal ID, organizacijos informacija", Response=typeof(SporOrg_Item)
+					Name = "Gauti organizaciją pagal ID, organizacijos informacija", Response=typeof(Organisation_Item)
 				}),
 			new RouteGroup("Locations")
 				.Map(new("/spor/locations", SporLocations.List){
-					Name = "Lokacijų sąrašas", Response=typeof(SporLoc_List),
+					Name = "Lokacijų sąrašas", Response=typeof(Locations_List),
 					Params = [
 						new("page") { Description = "Puslapio numeris", Type=RouteParamType.Integer },
 						new("limit") { Description = "Įrašų skaičius puslapyje", Type=RouteParamType.Integer },
@@ -78,7 +105,7 @@ public class SporRegistras {
 						new("desc") { Description = "Rikiuoti mažėjančia tvarka" }],
 				})
 				.Map(new ("/spor/location/{id}", SporLocations.Item) {
-					Name = "Gauti lokaciją pagal ID, lokacijos informacija", Response=typeof(SporLoc_Item)
+					Name = "Gauti lokaciją pagal ID, lokacijos informacija", Response=typeof(Location_Item)
 				})
 		],
 	};
