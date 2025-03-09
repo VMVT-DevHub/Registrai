@@ -13,6 +13,7 @@ public static partial class Extensions {
 		app.UseSwaggerUI(c => {
 			foreach (var i in routes) {
 				c.SwaggerEndpoint($"/swagger/{i.Path}/swagger.json", i.Name + " " + i.Version);
+				c.InjectStylesheet("/swagger-custom.css");
 			}
 		});
 #endif
@@ -34,8 +35,11 @@ public static partial class Extensions {
 			}
 			Console.WriteLine($"Endpoint: {i.Name} {i.Path} / {eps}");
 		}
-	}
 
+#if DEBUG //Disable Swagger
+		app.MapGet("swagger-custom.css", ()=> ".model-container { margin: 5px 10px !important; }\r\n.model-box { padding: 5px 10px !important; }\r\n.swagger-ui .info { margin:20px 10px !important; }\r\n").ExcludeFromDescription();
+#endif
+	}
 
 	public static IServiceCollection AddSwagger(this IServiceCollection services, List<RouteDefinition> routes) {
 
@@ -87,6 +91,11 @@ public static partial class Extensions {
 
 	public static bool ParamTrue(this HttpContext ctx, string prm) => ctx.Request.Query.TryGetValue(prm, out var flg) && (string.IsNullOrEmpty(flg) || flg == "1" || (bool.TryParse(flg, out var b3) && b3));
 	public static bool ParamNull(this HttpContext ctx, string prm) => !ctx.Request.Query.TryGetValue(prm, out var flg) || string.IsNullOrEmpty(flg);
+	public static int ParamInt(this HttpContext ctx, string prm) => ctx.Request.Query.TryGetValue(prm, out var flg) && !string.IsNullOrEmpty(flg) && int.TryParse(flg, out var num) ? num : 0;
+	public static int? ParamIntN(this HttpContext ctx, string prm) => ctx.Request.Query.TryGetValue(prm, out var flg) && !string.IsNullOrEmpty(flg) && int.TryParse(flg, out var num) ? num : null;
+	public static long ParamLong(this HttpContext ctx, string prm) => ctx.Request.Query.TryGetValue(prm, out var flg) && !string.IsNullOrEmpty(flg) && long.TryParse(flg, out var lng) ? lng : 0;
+	public static long? ParamLongN(this HttpContext ctx, string prm) => ctx.Request.Query.TryGetValue(prm, out var flg) && !string.IsNullOrEmpty(flg) && long.TryParse(flg, out var lng) ? lng : null;
+	public static string? ParamString(this HttpContext ctx, string prm) => ctx.Request.Query.TryGetValue(prm, out var flg) ? flg.FirstOrDefault() : null;
 
 
 	public static int Limit(this int num, int max) => num > max ? max : num;
