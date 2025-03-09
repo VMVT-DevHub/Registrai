@@ -14,22 +14,55 @@ namespace App {
 			return await Cmd.ExecuteReaderAsync();
 		}
 
+		/// <summary>Gauti objektą iš duomenų bazės pirmo įrašo</summary>
+		/// <typeparam name="T">Objekto klasė</typeparam>
+		/// <returns>Suformuotas objektas</returns>
+		public async Task<T?> GetObject<T>() where T: new() {
+			using var rdr = await GetReader();
+			return await rdr.GetObject<T>();
+		}
+
 		/// <summary></summary>
+		/// <param name="db"></param>
 		/// <param name="sql"></param>
 		/// <param name="param"></param>
-		public DBRead(string sql, Dictionary<string, object?>? param = null) {
-			Conn = new NpgsqlConnection(DB.ConnStr);
+		public DBRead(string sql, Dictionary<string, object?>? param = null, DB? db=null) {
+			db ??= App.DB.Master;
+			Conn = new NpgsqlConnection(db.ConnStr);
 			Cmd = new NpgsqlCommand(sql, Conn);
 			if (param?.Count > 0) {
 				foreach (var p in param) Cmd.Parameters.Add(new(p.Key, p.Value));
-				if (DB.Debug) {
-					var inc = DB.DebugIncr++;
+				if (db.Debug) {
+					var inc = db.DebugIncr++;
 					Console.WriteLine($"[SQL{inc}]: {sql}");
 					Console.WriteLine($"[SQL{inc}]: {JsonSerializer.Serialize(param)}");
 				}
 			}
-			else if (DB.Debug) {
-				Console.WriteLine($"[SQL{DB.DebugIncr++}]: {sql}");
+			else if (db.Debug) {
+				Console.WriteLine($"[SQL{db.DebugIncr++}]: {sql}");
+			}
+		}
+
+		//TODO: nauja funkcija parametrams sukrauti;
+
+		/// <summary></summary>
+		/// <param name="db"></param>
+		/// <param name="sql"></param>
+		/// <param name="param"></param>
+		public DBRead(string sql, DB? db, params (string key, object? val)[] param) {
+			db ??= App.DB.Master;
+			Conn = new NpgsqlConnection(db.ConnStr);
+			Cmd = new NpgsqlCommand(sql, Conn);
+			if (param?.Length > 0) {
+				foreach (var p in param) Cmd.Parameters.Add(new(p.key, p.val));
+				if (db.Debug) {
+					var inc = db.DebugIncr++;
+					Console.WriteLine($"[SQL{inc}]: {sql}");
+					Console.WriteLine($"[SQL{inc}]: {JsonSerializer.Serialize(param.ToDictionary(x => x.key, x => x.val))}");
+				}
+			}
+			else if (db.Debug) {
+				Console.WriteLine($"[SQL{db.DebugIncr++}]: {sql}");
 			}
 		}
 
@@ -56,40 +89,50 @@ namespace App {
 
 	}
 
-	//TODO: separate non-static connections for modules
 	/// <summary>Duomenų bazės pagalbininkas</summary>
-	public static class DB {
+	/// <remarks>Naujas duomenų bazės prisijungimas</remarks>
+	/// <param name="conn"></param>
+	public class DB(string conn) {
+		/// <summary>Pagrindinis DB prisijungimas</summary>
+		public static DB Master { get; set; } = new ("User ID=postgres; Password=postgres; Server=localhost:5432; Database=master;");
+		/// <summary>VVR DB prisijungimas</summary>
+		public static DB VVR { get; set; } = new ("User ID=postgres; Password=postgres; Server=localhost:5432; Database=VVR;");
+
+
+		//TODO: addminutes from config
+		/// <summary>Įrašų skaičiaus atnaujinimas (sekundės)</summary>
+		public int CountReset { get; set; } = 5000;
+
 		/// <summary>Print query to console</summary>
-		public static bool Debug { get; set; }
+		public bool Debug { get; set; }
 		/// <summary>Print query numbering</summary>
-		public static long DebugIncr { get; set; }
+		public long DebugIncr { get; set; }
 
 		/// <summary>Prisijungimo tekstas</summary>
-		public static string ConnStr { get; set; } = "User ID=postgres; Password=postgres; Server=localhost:5432; Database=master;";
+		public string ConnStr { get; set; } = conn;
 		/// <summary>Vykdyti užklausą</summary>
 		/// <param name="sql">Užklausa</param>
 		/// <returns>Paveiktų įrašų skaičius</returns>
-		public static async Task<int> Execute(string sql) {
+		public async Task<int> Execute(string sql) {
 			var conn = new NpgsqlConnection(ConnStr); await conn.OpenAsync();
 			return await new NpgsqlCommand(sql, conn).ExecuteNonQueryAsync();
 		}
 
-
-		//TODO: Clear COUNTS!!!
-		private static readonly Dictionary<string, int> Counts = [];
+		//TODO: Clear old COUNTS
+		private readonly Dictionary<string, (int num, DateTime tmo)> Counts = [];
 
 		/// <summary>Užklausos įrašų skaičiaus gavimas</summary>
 		/// <param name="table">Lentelė</param>
 		/// <param name="where">WHERE sąlyga</param>
 		/// <param name="param">Užklausos parametrai</param>
 		/// <returns>Įrašų skaičius</returns>
-		public static async Task<int> GetCount(string table, string? where, Dictionary<string, object?>? param = null) {
+		public async Task<int> GetCount(string table, string? where, Dictionary<string, object?>? param = null) {
 			var qry = $"{table}{where}";
 			if (param?.Count > 0) foreach (var i in param) qry += i.Value?.ToString();
-			if (Counts.TryGetValue(qry, out var cnt)) return cnt;
-			using var db = new DBRead($"SELECT count(*) FROM {table}{where};", param);
+			if (Counts.TryGetValue(qry, out var cnt) && cnt.tmo > DateTime.UtcNow) return cnt.num;
+			using var db = new DBRead($"SELECT count(*) FROM {table}{where};", param, this);
 			using var rdr = await db.GetReader();
-			if (await rdr.ReadAsync()) return Counts[qry] = rdr.GetInt32(0);
+			if (await rdr.ReadAsync()) return (Counts[qry] = (rdr.GetInt32(0), DateTime.UtcNow.AddSeconds(CountReset))).num;
 			return 0;
 		}
 	}
@@ -117,12 +160,16 @@ namespace App {
 	/// <summary>Duomenų puslapiavimo užklausa</summary>
 	/// <typeparam name="T"></typeparam>
 	/// <remarks>Puslapiavimo užklausos konstruktorius</remarks>
+	/// <param name="db">Duomenų bazės prisijungimas</param>
 	/// <param name="table">Lentelės pavadinimas</param>
-	public class DBPagingRequest<T>(string table) where T : new() {
+	public class DBPagingRequest<T>(string table, DB? db = null) where T : new() {
+		private DB Db { get; set; } = db ?? DB.Master;
 		/// <summary>Lentelės pavadinimas</summary>
 		public string Table { get; set; } = table;
 		/// <summary>Užklausos ribojimas</summary>
 		public T? Where { get; set; }
+		/// <summary>Užklausos ribojimas</summary>
+		public string? WhereAdd { get; set; }
 		/// <summary>Paieškos laukas</summary>
 		public string? Search { get; set; }
 		/// <summary>Paieška prasideda fraze</summary>
@@ -153,7 +200,7 @@ namespace App {
 			var advs = false;
 
 			string where = ""; var param = new Dictionary<string, object?>();
-			var whr = new List<string>();
+			var whr = new List<string>(); if (!string.IsNullOrEmpty(WhereAdd)) whr.Add(WhereAdd);
 			if (Where is not null) {
 				foreach (var i in typeof(T).GetProperties()) {
 					var n = i.Name;
@@ -182,34 +229,18 @@ namespace App {
 			}
 			if (whr.Count > 0) where = $" WHERE {string.Join(" and ", whr)} ";
 
-			var ret = new DBPagingResponse<T>() { Total = Total ? await DB.GetCount(Table, where, param) : 0, Page = Page };
+			var ret = new DBPagingResponse<T>() { Total = Total ? await Db.GetCount(Table, where, param) : 0, Page = Page };
 			var qry = $"SELECT {slt} FROM {Table} {where} {(srt is null ? "" : $"ORDER By {srt} {(Desc ? "Desc" : "Asc")}")} LIMIT {Limit} OFFSET {(Page - 1) * Limit}";
 			if (advs) qry = $"SELECT * FROM ({qry}) WHERE srsiml>0";
-			using var db = new DBRead(qry, param);
+			using var db = new DBRead(qry, param, Db);
 			using var rdr = await db.GetReader();
 
-
-			var cnt = rdr.FieldCount;
-			var props = new PropertyInfo?[cnt];
-			for (var i = 0; i < cnt; i++) props[i] = typeof(T).GetProperty(rdr.GetName(i));
+			var props = rdr.GetProps<T>();
 
 			while (await rdr.ReadAsync()) {
-				var t = new T();
-				for (int i = 0; i < cnt; i++) {
-					var pi = props[i];
-					if (pi != null && !await rdr.IsDBNullAsync(i)) {
-						switch (pi.PropertyType.Name) {
-							case "Int32": pi.SetValue(t, rdr.GetInt32(i)); break;
-							case "Int64": pi.SetValue(t, rdr.GetInt64(i)); break;
-							case "DateTime": pi.SetValue(t, rdr.GetDateTime(i)); break;
-							case "DateOnly": pi.SetValue(t, DateOnly.FromDateTime(rdr.GetDateTime(i))); break;
-							case "String": pi.SetValue(t, rdr.GetString(i)); break;
-							default: pi.SetValue(t, rdr.GetValue(i)); break;
-						}
-					}
-				}
+				var itm = await rdr.GetObject<T>(props);
 				//TODO: Sleep;
-				ret.Data.Add(t);
+				if (itm is not null) ret.Data.Add(itm);
 			}
 			if (!Total) { ret.Total = ret.Data.Count; }
 			return ret;
@@ -231,6 +262,48 @@ namespace App {
 		/// <summary>Gauti datos reikšmę</summary>
 		/// <param name="rdr"></param><param name="id"></param><returns></returns>
 		public static DateOnly? GetDateOnlyN(this NpgsqlDataReader rdr, int id) => !rdr.IsDBNull(id) ? DateOnly.FromDateTime(rdr.GetDateTime(id)) : null;
+
+		/// <summary>Gauti objekto klasės parametrų informaciją</summary>
+		/// <typeparam name="T">Objekto klasė</typeparam>
+		/// <param name="rdr">SQL duomenų skaitytuvas</param>
+		/// <returns>Parametrų sąrašas</returns>
+		public static PropertyInfo?[] GetProps<T>(this NpgsqlDataReader rdr) {
+			var cnt = rdr.FieldCount;
+			var props = new PropertyInfo?[cnt];
+			var ptp = typeof(T);
+			for (var i = 0; i < cnt; i++) props[i] = ptp.GetProperty(rdr.GetName(i));
+			return props;
+		}
+		/// <summary>Gauti suformuotą objektą iš duomenų įrašo</summary>
+		/// <typeparam name="T">Klasė</typeparam>
+		/// <param name="rdr">Duomenų bazės skaitytuvas</param>
+		/// <param name="props">Duomenų parametrai</param>
+		/// <returns>Objektas</returns>
+		public static async Task<T?> GetObject<T>(this NpgsqlDataReader rdr, PropertyInfo?[]? props=null) where T : new() {
+			var t = new T();
+			if (!rdr.IsOnRow) if (!await rdr.ReadAsync()) return default;
+
+			props ??= rdr.GetProps<T>();
+			for (int i = 0; i < props.Length; i++) {
+				var pi = props[i];
+				if (pi != null && !await rdr.IsDBNullAsync(i)) {
+					var pt = pi.PropertyType;
+					switch (pt.Name) {
+						case "Int32": pi.SetValue(t, rdr.GetInt32(i)); break;
+						case "Int64": pi.SetValue(t, rdr.GetInt64(i)); break;
+						case "DateTime": pi.SetValue(t, rdr.GetDateTime(i)); break;
+						case "DateOnly": pi.SetValue(t, DateOnly.FromDateTime(rdr.GetDateTime(i))); break;
+						case "String": pi.SetValue(t, rdr.GetString(i)); break;
+						default:
+							if (pt.IsClass && rdr.GetDataTypeName(i).Equals("jsonb", StringComparison.OrdinalIgnoreCase))
+								pi.SetValue(t, JsonSerializer.Deserialize(rdr.GetString(i), pt));
+							else pi.SetValue(t, rdr.GetValue(i));
+							break;
+					}
+				}
+			}
+			return t;
+		}
 	}
 
 	/// <summary>Duomenų puslapiavimo užklausa</summary>
