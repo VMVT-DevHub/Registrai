@@ -54,7 +54,7 @@ namespace App {
 			Conn = new NpgsqlConnection(db.ConnStr);
 			Cmd = new NpgsqlCommand(sql, Conn);
 			if (param?.Length > 0) {
-				foreach (var p in param) Cmd.Parameters.Add(new(p.key, p.val));
+				foreach (var (key, val) in param) Cmd.Parameters.Add(new(key, val));
 				if (db.Debug) {
 					var inc = db.DebugIncr++;
 					Console.WriteLine($"[SQL{inc}]: {sql}");
