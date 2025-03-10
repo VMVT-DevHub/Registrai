@@ -126,8 +126,6 @@ public static partial class SporReferences {
 			Page = ctx.ParamIntN("page") ?? 1,
 			Sort = ctx.ParamString("order") ?? "ID",
 			Desc = ctx.ParamTrue("desc"),
-			//Where = (!ctx.ParamNull("org") || !ctx.ParamNull("country")) ? new() { OrgID = ctx.ParamString("org"), CountryCode = ctx.ParamString("country")?.ToUpper() } : null,
-			//WhereAdd = ctx.ParamTrue("inactive") ? null : "\"Inactive\" is null",
 			Fields = ListFld,
 			Select = ListSel
 		}.Execute();
@@ -192,6 +190,61 @@ public static partial class SporReferences {
 			Where = (!ctx.ParamNull("list")) ? new() { ListID = ctx.ParamLong("list") } : null,
 			WhereAdd = ctx.ParamTrue("inactive") ? null : "\"Status\" is null",
 			Fields = TermFld, Select = TermSel,
+			Total = false,
+			Search = ctx.ParamString("q")?.MkSerach()
+		}.Execute();
+		await ctx.Response.WriteAsJsonAsync(m.Data);
+	}
+	private static string? MkSerach(this string? q) => q?.RemoveAccents().RemoveNonAlphanumeric(true).ToLower();
+
+}
+
+
+
+/// <summary>SPOR medžiagų sąrašai</summary>
+public static partial class SporSubstances {
+	static readonly List<string> ListFld = ["ID", "Name", "Source", "Domain", "Type", "Formula", "Weight", "ParentID", "ChildCount", "Names", "search"];
+	static readonly List<string> ListSel = ["ID", "Name", "Source", "Domain", "Type", "Formula", "Weight", "ParentID", "ChildCount", "Names"];
+	static readonly string ListSelTxt = $"\"{string.Join("\",\"", ListSel)}\"";
+
+	/// <summary>Medžiagos</summary>
+	/// <param name="ctx"></param>
+	/// <returns></returns>
+	public static async Task List(HttpContext ctx) {
+		var m = await new DBPagingRequest<Substances_Item>("spor.v_substances", DB.VVR) {
+			Limit = (ctx.ParamIntN("limit") ?? 25).Limit(1000),
+			Page = ctx.ParamIntN("page") ?? 1,
+			Sort = ctx.ParamString("order") ?? "ID",
+			Desc = ctx.ParamTrue("desc"),
+			Where = (!ctx.ParamNull("domain") || !ctx.ParamNull("type")) ? new() { Domain = ctx.ParamString("org"), Type = ctx.ParamString("type") } : null,
+			Fields = ListFld,
+			Select = ListSel
+		}.Execute();
+		await ctx.Response.WriteAsJsonAsync(m);
+	}
+
+	/// <summary>Gauti medžiagą pagal ID</summary>
+	/// <param name="ctx"></param>
+	/// <param name="id">Medžiagos ID</param>
+	/// <returns></returns>
+	public static async Task Item(HttpContext ctx, long id) {
+		var m = await new DBRead($"SELECT {ListSelTxt} FROM spor.v_substances WHERE \"ID\"=@id", DB.VVR, ("@id", id)).GetObject<Substances_Item>();
+		if (m is null) ctx.Response.E404(true);
+		else await ctx.Response.WriteAsJsonAsync(m);
+	}
+
+
+	/// <summary>Medžiagų paieška</summary>
+	/// <param name="ctx"></param>
+	/// <returns></returns>
+	public static async Task Find(HttpContext ctx) {
+		var m = await new DBPagingRequest<Substances_Item>("spor.v_substances", DB.VVR) {
+			Limit = (ctx.ParamIntN("limit") ?? 10).Limit(100), //TODO: limit from config
+			Page = 1,
+			Sort = ctx.ParamString("order") ?? "ID",
+			Desc = ctx.ParamTrue("desc"),
+			Where = (!ctx.ParamNull("domain") || !ctx.ParamNull("type")) ? new() { Domain = ctx.ParamString("org"), Type = ctx.ParamString("type") } : null,
+			Fields = ListFld, Select = ListSel,
 			Total = false,
 			Search = ctx.ParamString("q")?.MkSerach()
 		}.Execute();

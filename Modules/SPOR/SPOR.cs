@@ -12,23 +12,30 @@ public class SporRegistras {
 		Description = "<B>European Medicines Agency</B><BR>Substances, products, organisations and referentials (SPOR)",
 		Tag = "spor", Version = "v1",
 		Routes = [
-			//new RouteGroup("Substances")
-			//	.Map(new("/spor/list", Spor.List){
-			//		Name = "Kodų sąrašas", Response=typeof(Evrk_List),
-			//		Params = [new("l1") { Description = "Rodyti tik pirmą lygį (parent=\"\")" }, new("desc") { Description = "Rikiuoti mažėjančia tvarka" }],
-			//	})
-			//	.Map(new("/spor/details", Spor.Details){
-			//		Name= "Įrašo informacija", Response = typeof(Evrk_Item),
-			//		Params = [new("code") { Description = "Ieškoti pagal kodą" }]
-			//	})
-			//	.Map(new("/spor/details", Spor.DetailsMulti){
-			//		Name= "Įrašo informacija", Response = typeof(List<Evrk_Item>), Method=Method.Post,
-			//		Params = [new("code") { Description = "Ieškoti pagal kodą" }]
-			//	})
-			//	.Map(new("/spor/search", Spor.Search){
-			//		Name= "Kodų paieška", Response = typeof(List<Evrk_Item>),
-			//		Params = [new("code") { Description = "Ieškoti pagal kodą" }]
-			//	}),
+			new RouteGroup("Substances")
+				.Map(new("/spor/substances", SporSubstances.List){
+					Name = "Medžiagos", Response=typeof(Substances_List),
+					Params = [
+						new("page") { Description = "Puslapio numeris", Type=RouteParamType.Integer },
+						new("limit") { Description = "Įrašų skaičius puslapyje", Type=RouteParamType.Integer },
+						new("domain") { Description = "Filtruoti pagal domeną", Type=RouteParamType.String },
+						new("type") { Description = "Filtruoti pagal tipą", Type=RouteParamType.String },
+						new("order") { Description = "Rikiuoti pagal", Type=RouteParamType.String },
+						new("desc") { Description = "Rikiuoti mažėjančia tvarka" }],
+				})
+				.Map(new ("/spor/substances/{id}", SporSubstances.Item) {
+					Name = "Medžiagos informacija pagal ID", Response=typeof(Substances_Item)
+				})
+				.Map(new("/spor/substances/find", SporSubstances.Find){
+					Name = "Madžiagų paieška", Response=typeof(Substances_List),
+					Params = [
+						new("q") { Description = "Paieškos frazė", Type=RouteParamType.String },
+						new("limit") { Description = "Įrašų skaičius puslapyje", Type=RouteParamType.Integer },
+						new("domain") { Description = "Filtruoti pagal domeną", Type=RouteParamType.String },
+						new("type") { Description = "Filtruoti pagal tipą", Type=RouteParamType.String },
+						new("order") { Description = "Rikiuoti pagal", Type=RouteParamType.String },
+						new("desc") { Description = "Rikiuoti mažėjančia tvarka" }],
+				}),
 			new RouteGroup("References")
 				.Map(new("/spor/references/lists", SporReferences.List){
 					Name = "Sąrašai", Response=typeof(References_ListsList),

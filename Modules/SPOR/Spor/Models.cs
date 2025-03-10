@@ -113,3 +113,43 @@ public class References_TermLang {
 	/// <summary>Kita informacija</summary>
 	public List<string>? Other { get; set; }
 }
+
+
+
+/// <summary>Terminų sąrašas</summary>
+public class Substances_List : DBPagingResponse<Substances_Item> { }
+/// <summary>Termino informacija</summary>
+public class Substances_Item {
+	/// <summary>Identifikacinis numeris</summary>
+	public long? ID { get; set; }
+	/// <summary>Pagrindinis pavadinimas</summary>
+	public string? Name { get; set; }
+	/// <summary>Įrašo ištakos</summary>
+	public string? Source { get; set; }
+	/// <summary>Įrašo domenas</summary>
+	public string? Domain { get; set; }
+	/// <summary>Įrašo tipas</summary>
+	public string? Type { get; set; }
+	/// <summary>Medžiagos formulė</summary>
+	public string? Formula { get; set; }
+	/// <summary>Medžiagos masė</summary>
+	public decimal? Weight { get; set; }
+
+	/// <summary>Pavadinimai kitomis kalbomis</summary>
+	public Substances_ItemLang? Names { get; set; }
+
+	/// <summary>Aukštesnio įrašo identifikatorius</summary>
+	public long? ParentID { get; set; }
+	/// <summary>Žemesnio įrašo skaičius</summary>
+	public int? ChildCount { get; set; }
+}
+
+/// <summary>Medžiagos pavadinimai</summary>
+public class Substances_ItemLang {
+	/// <summary>Angliški pavadinimai</summary>
+	public string[]? En { get; set; }
+	/// <summary>Lietuviški pavadinimai</summary>
+	public string[]? Lt { get; set; }
+	/// <summary>Lotyniški pavadinimai</summary>
+	public string[]? La { get; set; }
+}
