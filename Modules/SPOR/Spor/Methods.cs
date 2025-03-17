@@ -15,34 +15,35 @@ public static partial class SporLocations {
 
 	static readonly List<string> ListFld = ["ID", "CountryCode", "OrgID", "OrgNameEn", "OrgNameLt", "En", "Lt", "Inactive"];
 	static readonly List<string> ListSel = ["ID", "CountryCode", "OrgID", "OrgNameEn", "OrgNameLt", "En", "Lt", "Inactive"];
-    static readonly string ListSelTxt = $"\"{string.Join("\",\"", ListSel)}\"";
+	static readonly string ListSelTxt = $"\"{string.Join("\",\"", ListSel)}\"";
 
 	/// <summary>Lokacijų sąrašas</summary>
 	/// <param name="ctx"></param>
 	/// <returns></returns>
 	public static async Task List(HttpContext ctx) {
 		var m = await new DBPagingRequest<Location_Item>("spor.v_locations", DB.VVR) {
-            Limit = (ctx.ParamIntN("limit") ?? 25).Limit(1000),
-            Page = ctx.ParamIntN("page") ?? 1,
-            Sort = ctx.ParamString("order") ?? "ID",
-            Desc = ctx.ParamTrue("desc"),
-            Where = (!ctx.ParamNull("org") || !ctx.ParamNull("country")) ? new() { OrgID = ctx.ParamString("org"), CountryCode = ctx.ParamString("country")?.ToUpper() } : null,
-            WhereAdd = ctx.ParamTrue("inactive") ? null : "\"Inactive\" is null",
-            Fields = ListFld,
-            Select = ListSel
-        }.Execute();
-        await ctx.Response.WriteAsJsonAsync(m);
+			Limit = (ctx.ParamIntN("limit") ?? 25).Limit(1000),
+			Page = ctx.ParamIntN("page") ?? 1,
+			Sort = ctx.ParamString("order") ?? "ID",
+			Desc = ctx.ParamTrue("desc"),
+			Where = (!ctx.ParamNull("org") || !ctx.ParamNull("country")) ? new() { OrgID = ctx.ParamString("org"), CountryCode = ctx.ParamString("country")?.ToUpper() } : null,
+			WhereAdd = ctx.ParamTrue("inactive") ? null : "\"Inactive\" is null",
+			Fields = ListFld,
+			Select = ListSel
+		}.Execute();
+		await ctx.Response.WriteAsJsonAsync(m);
 	}
 
-    /// <summary>Gauti lokaciją pagal ID</summary>
-    /// <param name="ctx"></param>
-    /// <param name="id"></param>
-    /// <returns></returns>
-    public static async Task Item(HttpContext ctx, string id) {
-        var m = await new DBRead($"SELECT {ListSelTxt} FROM spor.v_locations WHERE \"ID\"=@id", DB.VVR, ("@id", id)).GetObject<Location_Item>();
-        if (m is null) ctx.Response.E404(true);
-        else await ctx.Response.WriteAsJsonAsync(m);
-    }
+	/// <summary>Gauti lokaciją pagal ID</summary>
+	/// <param name="ctx"></param>
+	/// <param name="id"></param>
+	/// <returns></returns>
+	public static async Task Item(HttpContext ctx, string id) {
+		using var db = new DBRead($"SELECT {ListSelTxt} FROM spor.v_locations WHERE \"ID\"=@id", DB.VVR, ("@id", id));
+		var m = await db.GetObject<Location_Item>();
+		if (m is null) ctx.Response.E404(true);
+		else await ctx.Response.WriteAsJsonAsync(m);
+	}
 }
 
 
@@ -75,7 +76,8 @@ public static partial class SporOrganisations {
 	/// <param name="id"></param>
 	/// <returns></returns>
 	public static async Task Item(HttpContext ctx, string id) {
-		var m = await new DBRead($"SELECT {ListSelTxt} FROM spor.v_organisations WHERE \"ID\"=@id", DB.VVR, ("@id", id)).GetObject<Organisation_Item>();
+		using var db = new DBRead($"SELECT {ListSelTxt} FROM spor.v_organisations WHERE \"ID\"=@id", DB.VVR, ("@id", id));
+		var m = await db.GetObject<Organisation_Item>();
 		if (m is null) ctx.Response.E404(true);
 		else await ctx.Response.WriteAsJsonAsync(m);
 	}
@@ -137,7 +139,8 @@ public static partial class SporReferences {
 	/// <param name="id"></param>
 	/// <returns></returns>
 	public static async Task ListItem(HttpContext ctx, long id) {
-		var m = await new DBRead($"SELECT {ListSelTxt} FROM spor.v_references_list WHERE \"ID\"=@id", DB.VVR, ("@id", id)).GetObject<References_ListItem>();
+		using var db = new DBRead($"SELECT {ListSelTxt} FROM spor.v_references_list WHERE \"ID\"=@id", DB.VVR, ("@id", id));
+		var m = await db.GetObject<References_ListItem>();
 		if (m is null) ctx.Response.E404(true);
 		else {
 			if (m.TermCount < 300) { //TODO: 300 iš konfigo
@@ -173,7 +176,8 @@ public static partial class SporReferences {
 	/// <param name="id">Termino ID</param>
 	/// <returns></returns>
 	public static async Task TermItem(HttpContext ctx, long id) {
-		var m = await new DBRead($"SELECT {TermSelTxt} FROM spor.v_references_terms WHERE \"ID\"=@id", DB.VVR, ("@id", id)).GetObject<References_TermItem>();
+		using var db = new DBRead($"SELECT {TermSelTxt} FROM spor.v_references_terms WHERE \"ID\"=@id", DB.VVR, ("@id", id));
+		var m = await db.GetObject<References_TermItem>();
 		if (m is null) ctx.Response.E404(true);
 		else await ctx.Response.WriteAsJsonAsync(m);
 	}
@@ -228,7 +232,8 @@ public static partial class SporSubstances {
 	/// <param name="id">Medžiagos ID</param>
 	/// <returns></returns>
 	public static async Task Item(HttpContext ctx, long id) {
-		var m = await new DBRead($"SELECT {ListSelTxt} FROM spor.v_substances WHERE \"ID\"=@id", DB.VVR, ("@id", id)).GetObject<Substances_Item>();
+		using var db = new DBRead($"SELECT {ListSelTxt} FROM spor.v_substances WHERE \"ID\"=@id", DB.VVR, ("@id", id));
+		var m = await db.GetObject<Substances_Item>();
 		if (m is null) ctx.Response.E404(true);
 		else await ctx.Response.WriteAsJsonAsync(m);
 	}
