@@ -143,7 +143,7 @@ public static partial class SporReferences {
 		var m = await db.GetObject<References_ListItem>();
 		if (m is null) ctx.Response.E404(true);
 		else {
-			if (m.TermCount < 300) { //TODO: 300 iš konfigo
+			if (ctx.ParamTrue("terms") && m.TermCount < 300) { //TODO: 300 iš konfigo
 				var ls = await new DBPagingRequest<References_TermItem>("spor.v_references_terms", DB.VVR) {
 					Limit = 300, Page = 1,
 					Where = new() { ListID = id }, WhereAdd = "\"Status\" is null",
