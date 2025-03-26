@@ -18,6 +18,7 @@ public static class ARSearch {
 				using var db = new DBRead("SELECT tipas FROM ar.v_app_types;");
 				using var rdr = db.GetReader().Result;
 				var ret = new List<string>(); while (rdr.Read()) ret.AddN(rdr.GetStringN(0)?.RemoveAccents().RemoveNonAlphanumeric(true)); CachedRemTypes = ret;
+				CachedRemTypes.Add("r");
 			}
 			return CachedRemTypes;
 		}
@@ -119,7 +120,7 @@ public static class ARSearch {
 	/// <param name="q">Paieškos frazė</param>
 	/// <param name="top">Duomenų ribojimas</param>
 	/// <returns></returns>
-	public static async Task FGyv(HttpContext ctx, string q, int top = 10) => await ctx.Response.WriteAsJsonAsync(await GetSrh(q, top, "gyv", null, true));
+	public static async Task FGyv(HttpContext ctx, string q, int top = 10) => await ctx.Response.WriteAsJsonAsync(await GetSrh(q, top, "gyv"));
 
 	/// <summary>Adresų paieška (GAT+AOB+PAT)</summary>
 	/// <param name="ctx"></param>
@@ -142,6 +143,7 @@ public static class ARSearch {
 			SearchSort = "sort"
 		};
 		var ret = await wr.Execute();
-		return ret.Data;
+		if (full || ret.Items > 0) return ret.Data;
+		else return await GetSrh(q, top, src, gyv, true);
 	}
 }
