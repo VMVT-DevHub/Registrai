@@ -119,7 +119,7 @@ public static class ARSearch {
 	/// <param name="q">Paieškos frazė</param>
 	/// <param name="top">Duomenų ribojimas</param>
 	/// <returns></returns>
-	public static async Task FGyv(HttpContext ctx, string q, int top = 10) => await ctx.Response.WriteAsJsonAsync(await GetSrh(q, top, "gyv"));
+	public static async Task FGyv(HttpContext ctx, string q, int top = 10) => await ctx.Response.WriteAsJsonAsync(await GetSrh(q, top, "gyv", null, true));
 
 	/// <summary>Adresų paieška (GAT+AOB+PAT)</summary>
 	/// <param name="ctx"></param>
@@ -129,8 +129,8 @@ public static class ARSearch {
 	public static async Task FAdr(HttpContext ctx, int gyv, string q, int top = 10) => await Adr(ctx, gyv, q, top);
 
 
-	private static async Task<List<AR_SearchItem>> GetSrh(string q, int top, string src, int? gyv = null) {
-		var wr = new DBPagingRequest<AR_SearchItem>("ar.v_app_search") {
+	private static async Task<List<AR_SearchItem>> GetSrh(string q, int top, string src, int? gyv = null, bool full = false) {
+		var wr = new DBPagingRequest<AR_SearchItem>(full ? "ar.v_app_search_full" : "ar.v_app_search") {
 			Limit = top.Limit(pagelimit),
 			Page = 1,
 			Desc = true,
