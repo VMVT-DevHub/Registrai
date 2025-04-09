@@ -262,7 +262,14 @@ namespace App {
 		/// <summary>Gauti datos reikšmę</summary>
 		/// <param name="rdr"></param><param name="id"></param><returns></returns>
 		public static DateOnly? GetDateOnlyN(this NpgsqlDataReader rdr, int id) => !rdr.IsDBNull(id) ? DateOnly.FromDateTime(rdr.GetDateTime(id)) : null;
-
+		/// <summary>Gauti visas įrašo reikšmes kaip objektų masyvą</summary>
+		/// <param name="rdr"></param><returns></returns>
+		public static object[] GetRow(this NpgsqlDataReader rdr) {
+			var cnt = rdr.FieldCount;
+			var row = new object[cnt];
+			for (int i = 0; i < cnt; i++) row[i] = rdr.GetValue(i);
+			return row;
+		}
 		/// <summary>Gauti objekto klasės parametrų informaciją</summary>
 		/// <typeparam name="T">Objekto klasė</typeparam>
 		/// <param name="rdr">SQL duomenų skaitytuvas</param>

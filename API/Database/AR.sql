@@ -62,7 +62,7 @@ CREATE MATERIALIZED VIEW ar.v_app_data AS
 	seng as (SELECT sen_kodas::int id, ar.ST_Area(geom)::bigint plotas FROM ar.geo_3_seniunijos),
 	gyvg as (SELECT gyv_kodas::int id, ar.ST_Area(geom)::bigint plotas FROM ar.geo_4_gyvenvietes),
 	gatg as (SELECT gat_kodas::int id, ar.ST_Length(geom)::bigint ilgis FROM ar.geo_5_gatves),
-	geo  as (SELECT DISTINCT aob_kodas id, ARRAY[x_koord, y_koord] aob_lks, ARRAY[e_koord, n_koord] aob_wgs FROM ar.geo_6_adresai),
+	geo  as (SELECT DISTINCT aob_kodas id, ARRAY[x_koord, y_koord] aob_lks, ARRAY[n_koord, e_koord] aob_wgs FROM ar.geo_6_adresai),
 	dm as (
 		SELECT dt.id, src,
 		CASE src
