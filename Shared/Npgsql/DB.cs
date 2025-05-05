@@ -22,6 +22,14 @@ namespace App {
 			return await rdr.GetObject<T>();
 		}
 
+		/// <summary>Gauti objektą iš duomenų bazės pirmo įrašo pirmo lauko</summary>
+		/// <typeparam name="T">Objekto klasė</typeparam>
+		/// <returns>Suformuotas objektas</returns>
+		public async Task<T?> GetObject<T>(int field) where T : new() {
+			using var rdr = await GetReader();
+			return await rdr.GetJsonObject<T>(field);
+		}
+
 		/// <summary></summary>
 		/// <param name="db"></param>
 		/// <param name="sql"></param>
@@ -186,6 +194,8 @@ namespace App {
 		public List<string>? Select { get; set; }
 		/// <summary>Duomenų lentelės laukai</summary>
 		public List<string>? Fields { get; set; }
+		/// <summary>Imti duomenis iš vieno lauko</summary>
+		public string? JsonField { get; set; }
 		/// <summary>Didėjančia tvarka</summary>
 		public bool Desc { get; set; }
 		/// <summary>Get total number of rows</summary>
@@ -237,8 +247,11 @@ namespace App {
 
 			var props = rdr.GetProps<T>();
 
+			var jsfi = !string.IsNullOrEmpty(JsonField) ? rdr.GetFieldId(JsonField) : -1;
+			var jsf = jsfi >= 0;
+
 			while (await rdr.ReadAsync()) {
-				var itm = await rdr.GetObject<T>(props);
+				var itm = jsf ? await rdr.GetJsonObject<T>(jsfi) : await rdr.GetObject<T>(props);
 				//TODO: Sleep;
 				if (itm is not null) ret.Data.Add(itm);
 			}
@@ -310,6 +323,21 @@ namespace App {
 				}
 			}
 			return t;
+		}
+
+		public static async Task<T?> GetJsonObject<T>(this NpgsqlDataReader rdr, int field) where T : new() {
+			if (!rdr.IsOnRow) if (!await rdr.ReadAsync()) return default;
+			if (!await rdr.IsDBNullAsync(field)) {
+				var str = rdr.GetString(field);
+				return JsonSerializer.Deserialize<T>(str);
+			}
+			return default;
+		}
+		public static int GetFieldId(this NpgsqlDataReader rdr, string name) {
+			for (int i = 0; i < rdr.FieldCount; i++) 
+				if (rdr.GetName(i).Equals(name, StringComparison.OrdinalIgnoreCase)) 
+					return i;
+			return -1;
 		}
 	}
 

@@ -1,6 +1,8 @@
 ﻿using System.Text.Json.Serialization;
+using Microsoft.OpenApi.Any;
+
 #if DEBUG
-	using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi.Models;
 #endif
 
 namespace App.Routing;
@@ -42,7 +44,12 @@ public class RouteParam(string name) {
 	public string? Description { get; set; }
 	public RouteParamType Type { get; set; } = RouteParamType.Boolean;
 	public bool Required { get; set; }
+	public string? Default { get; set; }
 #if DEBUG
-	public OpenApiParameter GetParam() => new() { Name = Name, In = ParameterLocation.Query, Description = Description, Required = Required, Schema = new() { Type = Type.ToString().ToLower() } };
+	public OpenApiParameter GetParam() => new() {
+		Name = Name, In = ParameterLocation.Query, Description = Description, Required = Required, Schema = new() {
+			Type = Type.ToString().ToLower(), Default = string.IsNullOrEmpty(Default) ? null : new OpenApiString(Default)
+		}
+	};
 #endif
 }

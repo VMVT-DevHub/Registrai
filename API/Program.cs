@@ -10,7 +10,8 @@ Startup.Routes(
 	AdresuRegistras.Route(),
 	SaliuRegistras.Route(),
 	EvrkRegistras.Route(),
-	SporRegistras.Route()
+	SporRegistras.Route(),
+	UpdRegistras.Route()
 );
 
 
