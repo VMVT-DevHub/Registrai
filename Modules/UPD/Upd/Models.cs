@@ -123,11 +123,11 @@ public class Pack {
 public class AdministrableProduct {
 	/// <summary>Sudedamosios dalys</summary>
 	public List<long>? Ingredients { get; set; }
-	/// <summary>Vartojimo būdas</summary>
+	/// <summary>Naudojimo būdas</summary>
 	public List<AdmRoute>? Routes { get; set; }
 }
 
-/// <summary>Vartojimo būdai</summary>
+/// <summary>Naudojimo būdai</summary>
 public class AdmRoute : Ref {
 	/// <summary>Gyvūnų rūšys</summary>
 	public List<AdmSpecies>? Spieces { get; set; }

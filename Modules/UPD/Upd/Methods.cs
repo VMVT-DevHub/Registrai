@@ -32,7 +32,7 @@ public static partial class UpdMedicines {
 			JsonField = en ? "list_en" : "list_lt",
 			//TODO: Filtrai
 			//Where = (!ctx.ParamNull("org") || !ctx.ParamNull("country")) ? new() { OrgID = ctx.ParamString("org"), CountryCode = ctx.ParamString("country")?.ToUpper() } : null,
-			WhereAdd = ctx.ParamTrue("order") ? null : "\"med_date\" is not null",
+			WhereAdd = ctx.ParamString("order") is null ? null : "\"med_date\" is not null",
 			Fields = ListFld,
 			Select = en ? ListEn : ListLt
 		}.Execute();
