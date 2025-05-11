@@ -50,8 +50,13 @@ public static partial class UpdMedicines {
 	/// <returns></returns>
 	public static async Task Item(HttpContext ctx, string id) {
 		var en = ctx.ParamString("lang")?.ToLower() == "en";
+#if DEBUG
+		var tbl = ctx.ParamTrue("uat") ? "upd_uat.v_med" : "upd.v_med";
+#else
+		var tbl = "upd.v_med";
+#endif
 		if (long.TryParse(id, out var idi)) {
-			using var db = new DBRead($"SELECT {(en ? "med_en" : "med_lt")} FROM upd.v_med WHERE \"med_id\"=@id", DB.VVR, ("@id", idi));
+			using var db = new DBRead($"SELECT {(en ? "med_en" : "med_lt")} FROM {tbl} WHERE \"med_id\"=@id", DB.VVR, ("@id", idi));
 			var m = await db.GetObject<Medicine>(0);
 			if (m is null) ctx.Response.E404(true);
 			else await ctx.Response.WriteAsJsonAsync(m);
