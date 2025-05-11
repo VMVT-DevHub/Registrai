@@ -24,7 +24,12 @@ public static partial class UpdMedicines {
 	public static async Task List(HttpContext ctx) {
 		var en = ctx.ParamString("lang")?.ToLower() == "en";
 		var desc = ctx.ParamString("order") is null;
-		var m = await new DBPagingRequest<MedListItem>("upd.v_med", DB.VVR) {
+#if DEBUG
+		var tbl = ctx.ParamTrue("uat") ? "upd_uat.v_med" : "upd.v_med";
+#else
+		var tbl = "upd.v_med";
+#endif
+		var m = await new DBPagingRequest<MedListItem>(tbl, DB.VVR) {
 			Limit = (ctx.ParamIntN("limit") ?? 25).Limit(100),
 			Page = ctx.ParamIntN("page") ?? 1,
 			Sort = ctx.ParamString("order") ?? "med_date",

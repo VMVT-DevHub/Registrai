@@ -94,6 +94,8 @@ public class Medicine {
 	public List<MfctItem>? MfctItem { get; set; }
 	/// <summary>Sudėtis</summary>
 	public List<Ingredient>? Ingredients { get; set; }
+	/// <summary>Prisegti dokumentai</summary>
+	public List<Document>? Documents { get; set; }
 }
 
 
@@ -188,4 +190,20 @@ public class Substance : Ref {
 	public List<string>? Names { get; set; }
 }
 
-
+/// <summary>Dokumentas</summary>
+public class Document {
+	/// <summary>Dokumento ID</summary>
+	public Guid? Id { get; set; }
+	/// <summary>Data</summary>
+	public DateTime? Date { get; set; }
+	/// <summary>Kalba</summary>
+	public string? Lang { get; set; }
+	/// <summary>Pavadinimas</summary>
+	public string? Name { get; set; }
+	/// <summary>Failo turinio tipas</summary>
+	public string? Content { get; set; }
+	/// <summary>Kategorija</summary>
+	public Ref? Category { get; set; }
+	/// <summary>Tipas</summary>
+	public Ref? Type { get; set; }
+}
