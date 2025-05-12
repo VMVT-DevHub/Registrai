@@ -211,6 +211,10 @@ public class Substance : Ref {
 	public string? Name { get; set; }
 	/// <summary>Pavadinimai</summary>
 	public List<string>? Names { get; set; }
+	/// <summary></summary>
+	public Value? Numerator { get; set; }
+	/// <summary></summary>
+	public Value? Denominator { get; set; }
 }
 
 /// <summary>Dokumentas</summary>
