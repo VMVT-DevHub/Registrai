@@ -12,7 +12,7 @@ public class MedListItem {
 	public string? Legal { get; set; }
 	public string? Holder { get; set; }
 	public string? Status { get; set; }
-	public List<string>? Ingedients { get; set; }
+	public List<string>? Ingredients { get; set; }
 	public List<string>? Species { get; set; }
 }
 
@@ -157,7 +157,7 @@ public class AdministrableProduct {
 /// <summary>Naudojimo būdai</summary>
 public class AdmRoute : Ref {
 	/// <summary>Gyvūnų rūšys</summary>
-	public List<AdmSpecies>? Spieces { get; set; }
+	public List<AdmSpecies>? Species { get; set; }
 }
 
 
