@@ -1,4 +1,5 @@
 ﻿using App;
+using System.Collections.Concurrent;
 using System.Net.Sockets;
 
 namespace Registrai.Modules.UPD;
@@ -14,6 +15,23 @@ public class MedListItem {
 }
 
 
+public static class RefCounter {
+	public static ConcurrentDictionary<long, long> Counts { get; set; } = new();
+	public static DateTime Load { get; set; } = DateTime.UtcNow.AddSeconds(30);
+	public static void Add(long id) {
+		var now = DateTime.UtcNow;
+		lock (Counts) {
+			if (Counts.TryGetValue(id, out var cnt)) Counts[id] = cnt + 1;
+			else Counts[id] = 1;
+			if (Load < now) {
+				foreach (var i in Counts)
+					DB.VVR.Execute($"INSERT INTO upd.log_translate (log_code, log_count) VALUES ({i.Key}, {i.Value});");
+				Counts = new();
+			}
+		}
+	}
+}
+
 
 /// <summary>SPOR Reference</summary>
 public class Ref {
@@ -21,8 +39,9 @@ public class Ref {
 	public long Code { get; set; }
 	/// <summary>Klasifikatoriaus pavadinimas</summary>
 	public string? Type { get; set; }
+	private bool VarLang { get; set; }
 	/// <summary>Ar reikalingas LT vertimas</summary>
-	public bool? Lang { get; set; }
+	public bool? Lang { get => null; set { if (value == true) { Task.Run(() => { Task.Delay(100); RefCounter.Add(Code); }); } } }
 }
 
 /// <summary>Įrašo reikšmė</summary>

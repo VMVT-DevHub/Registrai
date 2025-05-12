@@ -63,5 +63,20 @@ public static partial class UpdMedicines {
 		}
 		else ctx.Response.E404(true); //TODO: Normalią klaidą grąžinti
 	}
+
+	/// <summary>Gauti trūkstamus vertimus</summary>
+	/// <param name="ctx"></param>
+	/// <returns></returns>
+	public static async Task Refs(HttpContext ctx) {
+		if (DateTime.TryParse(ctx.ParamString("dt"), out var dt)) {
+			using var db = new DBRead($"WITH grp as (SELECT log_code, sum(log_count) cnt FROM upd.log_translate WHERE log_date>@dt GROUP BY log_code),\r\n\tprs as (SELECT jsonb_build_array(list_id, log_code, cnt, status_code, name_en) dt FROM grp LEFT JOIN spor.ref_terms trm ON (trm.term_id = grp.log_code) ORDER BY cnt desc)\r\nSELECT jsonb_agg(dt) FROM prs;", DB.VVR, ("@dt", dt));
+			var m = await db.GetObject<List<List<object?>>>(0);
+			if (m is null) ctx.Response.E404(true);
+			else await ctx.Response.WriteAsJsonAsync(m);
+		}
+		else ctx.Response.E404(true); //TODO: Normalią klaidą grąžinti
+	}
 }
+
+
 

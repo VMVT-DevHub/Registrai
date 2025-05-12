@@ -36,6 +36,11 @@ public class UpdRegistras {
 #endif
 					]
 				})
+				.Map(new("/upd/ref", UpdMedicines.Refs){
+					Name = "Trūkstami vertimai", Params = [
+						new("dt") { Description = "Įrašai nuo", Type=RouteParamType.String }
+					]
+				})
 		],
 	};
 }
