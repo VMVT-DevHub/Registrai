@@ -99,6 +99,8 @@ public class Medicine {
 	public Ref? Basis { get; set; }
 	/// <summary>Registruotojas</summary>
 	public Location? Holder { get; set; }
+	/// <summary>CMS</summary>
+	public List<Ref>? ReglCase { get; set; }
 	/// <summary>Pakuotės</summary>
 	public List<Pack>? Packs { get; set; }
 	/// <summary>Gamintojai</summary>
