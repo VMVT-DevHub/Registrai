@@ -199,6 +199,8 @@ public class Ingredient : Ref {
 	public bool? Presentation { get; set; }
 	/// <summary>Koncentracija</summary>
 	public bool? Concentration { get; set; }
+	/// <summary>ID</summary>
+	public long? Id { get; set; }
 	/// <summary>Pavadinimas</summary>
 	public string? Name { get; set; }
 	/// <summary>Sudėtinė medžiaga</summary>
