@@ -8,6 +8,7 @@ namespace Registrai.Modules.UPD;
 public class MedListItem {
 	public long Id { get; set; }
 	public string? Code { get; set; }
+	public DateOnly? Date { get; set; }
 	public string? Name { get; set; }
 	public string? Legal { get; set; }
 	public string? Holder { get; set; }
