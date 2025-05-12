@@ -11,6 +11,7 @@ public class MedListItem {
 	public DateOnly? Date { get; set; }
 	public string? Name { get; set; }
 	public string? Legal { get; set; }
+	public long? LegalCode { get; set; }
 	public string? Holder { get; set; }
 	public string? Status { get; set; }
 	public List<string>? Ingredients { get; set; }
