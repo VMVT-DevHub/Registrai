@@ -86,7 +86,7 @@ public class Medicine {
 	/// <summary>Vaisto kodas</summary>
 	public string? Code { get; set; }
 	/// <summary>Registracijos data</summary>
-	public DateTime? Date { get; set; }
+	public DateOnly? Date { get; set; }
 	/// <summary>Pavadinimas</summary>
 	public string? Name { get; set; }
 	/// <summary>Pavadinimai</summary>
