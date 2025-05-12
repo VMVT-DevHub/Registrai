@@ -82,6 +82,8 @@ public class Medicine {
 	public long Id { get; set; }
 	/// <summary>Vaisto kodas</summary>
 	public string? Code { get; set; }
+	/// <summary>Registracijos data</summary>
+	public DateTime? Date { get; set; }
 	/// <summary>Pavadinimas</summary>
 	public string? Name { get; set; }
 	/// <summary>Pavadinimai</summary>

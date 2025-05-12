@@ -122,7 +122,7 @@ namespace App {
 		/// <param name="sql">Užklausa</param>
 		/// <returns>Paveiktų įrašų skaičius</returns>
 		public async Task<int> Execute(string sql) {
-			var conn = new NpgsqlConnection(ConnStr); await conn.OpenAsync();
+			using var conn = new NpgsqlConnection(ConnStr); await conn.OpenAsync();
 			return await new NpgsqlCommand(sql, conn).ExecuteNonQueryAsync();
 		}
 
