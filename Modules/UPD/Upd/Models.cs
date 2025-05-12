@@ -106,7 +106,7 @@ public class Medicine {
 	/// <summary>Nuorodos</summary>
 	public List<Ref>? Reference { get; set; }
 	/// <summary>Klasifikavimas</summary>
-	public List<Ref>? Classif { get; set; }
+	public List<Value>? Classif { get; set; }
 	/// <summary>Plėtinys</summary>
 	public Ref? Extension { get; set; }
 	/// <summary>Vartojamas produktas</summary>
