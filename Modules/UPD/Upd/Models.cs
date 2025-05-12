@@ -12,6 +12,8 @@ public class MedListItem {
 	public string? Legal { get; set; }
 	public string? Holder { get; set; }
 	public string? Status { get; set; }
+	public List<string>? Ingedients { get; set; }
+	public List<string>? Species { get; set; }
 }
 
 
@@ -211,6 +213,8 @@ public class Substance : Ref {
 	public string? Name { get; set; }
 	/// <summary>Pavadinimai</summary>
 	public List<string>? Names { get; set; }
+	/// <summary></summary>
+	public string? Domain { get; set; }
 	/// <summary></summary>
 	public Value? Numerator { get; set; }
 	/// <summary></summary>
