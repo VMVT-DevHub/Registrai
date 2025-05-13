@@ -1,6 +1,5 @@
 ﻿using App;
 using System.Collections.Concurrent;
-using System.Net.Sockets;
 
 namespace Registrai.Modules.UPD;
 
@@ -268,6 +267,8 @@ public class DocumentInfo {
 	public DateTime? Date { get; set; }
 	/// <summary>Failo pavadinimas</summary>
 	public string? File { get; set; }
+	/// <summary>Failo turinio tipas</summary>
+	public string? Type { get; set; }
 }
 
 /// <summary>Referentinės šalys</summary>

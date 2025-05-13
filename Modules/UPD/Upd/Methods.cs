@@ -1,18 +1,9 @@
 ﻿using App;
 using App.Routing;
-using Microsoft.AspNetCore.DataProtection.Repositories;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using System;
-using System.ComponentModel;
-using System.Globalization;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using System.Reflection;
-using System.Text;
 using System.Text.Json.Serialization;
-using System.Text.RegularExpressions;
 using System.Xml;
 
 namespace Registrai.Modules.UPD;
@@ -105,7 +96,7 @@ public static partial class UpdMedicines {
 			var tbl = "upd.docs";
 			var cl = UPD.GetClient();
 #endif
-			using var db = new DBRead($"SELECT med_id \"MedId\", doc_id \"Id\", doc_status \"Status\", doc_date \"Date\", doc_file_name \"File\" FROM {tbl} WHERE doc_id=@file and med_id=@id;", DB.VVR, ("@file", gid), ("@id", id));
+			using var db = new DBRead($"SELECT med_id \"MedId\", doc_id \"Id\", doc_status \"Status\", doc_date \"Date\", doc_file_name \"File\", doc_file_type \"Type\" FROM {tbl} WHERE doc_id=@file and med_id=@id;", DB.VVR, ("@file", gid), ("@id", id));
 			var dt = await db.GetObject<DocumentInfo>();
 			if (dt is not null) {
 				var req = new HttpRequestMessage(HttpMethod.Get, file);
@@ -120,11 +111,14 @@ public static partial class UpdMedicines {
 							while (await rdr.ReadAsync())
 								if (rdr.IsStartElement("data"))
 									if (rdr.MoveToAttribute("value")) {
-										ctx.Response.ContentType = "application/octet-stream";
-										ctx.Response.Headers.ContentDisposition = $"attachment; filename=\"{dt.File}\"";
-										ctx.Response.Headers.Append("X-File-Med", dt.MedId?.ToString());
-										ctx.Response.Headers.Append("X-File-Status", dt.Status);
-										ctx.Response.Headers.Append("X-File-Date", dt.Date?.ToString("yyyy-MM-ddTHH:mm:ssZ"));
+										if (ctx.ParamTrue("preview")) {
+											ctx.Response.ContentType = dt.Type;
+											ctx.Response.Headers.ContentDisposition = $"inline; filename=\"{dt.File}\"";											
+										}
+										else {
+											ctx.Response.ContentType = "application/octet-stream";
+											ctx.Response.Headers.ContentDisposition = $"attachment; filename=\"{dt.File}\"";
+										}
 										while (rdr.ReadAttributeValue())
 											if (rdr.NodeType == XmlNodeType.Text) {
 												string chunk = rdr.Value;
