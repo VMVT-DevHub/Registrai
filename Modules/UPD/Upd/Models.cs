@@ -6,22 +6,36 @@ namespace Registrai.Modules.UPD;
 
 /// <summary>Trumpas vaistų sąrašo įrašas</summary>
 public class MedListItem {
+	/// <summary>Vaisto Id</summary>
 	public long Id { get; set; }
+	/// <summary>Vaisto kodas</summary>
 	public string? Code { get; set; }
+	/// <summary>Autorizacijos data</summary>
 	public DateOnly? Date { get; set; }
+	/// <summary>Pavadinimas</summary>
 	public string? Name { get; set; }
+	/// <summary>Teisinis statusas</summary>
 	public string? Legal { get; set; }
+	/// <summary>Teisinio statuso kodas</summary>
 	public long? LegalCode { get; set; }
+	/// <summary>Vaisto laikytojas</summary>
 	public string? Holder { get; set; }
+	/// <summary>Vaisto statusas</summary>
 	public string? Status { get; set; }
+	/// <summary>Sudedamosios medžiagos</summary>
 	public List<string>? Ingredients { get; set; }
+	/// <summary>Gyvūnų rūšys</summary>
 	public List<string>? Species { get; set; }
 }
 
 
+/// <summary>Neišverstų terminų skaičiavimas</summary>
 public static class RefCounter {
+	/// <summary>Terminų sąranka</summary>
 	public static ConcurrentDictionary<long, long> Counts { get; set; } = new();
-	public static DateTime Load { get; set; } = DateTime.UtcNow.AddSeconds(30);
+	private static DateTime Load { get; set; } = DateTime.UtcNow.AddSeconds(30);
+	/// <summary>Pridėti naują terminą</summary>
+	/// <param name="id"></param>
 	public static void Add(long id) {
 		var now = DateTime.UtcNow;
 		lock (Counts) {
@@ -29,7 +43,7 @@ public static class RefCounter {
 			else Counts[id] = 1;
 			if (Load < now) {
 				foreach (var i in Counts)
-					DB.VVR.Execute($"INSERT INTO upd.log_translate (log_code, log_count) VALUES ({i.Key}, {i.Value});");
+					DB.VVR.Execute($"INSERT INTO upd.log_translate (log_code, log_count) VALUES ({i.Key}, {i.Value});").Wait();
 				Counts = new();
 			}
 		}
@@ -96,6 +110,7 @@ public class Medicine {
 	public Ref? Status { get; set; }
 	/// <summary>Tipas</summary>
 	public Ref? Type { get; set; }
+	/// <summary></summary>
 	public Value? Case { get; set; }
 	/// <summary>Teisinis statusas</summary>
 	public Ref? Legal { get; set; }
@@ -241,4 +256,18 @@ public class Document {
 	public Ref? Category { get; set; }
 	/// <summary>Tipas</summary>
 	public Ref? Type { get; set; }
+}
+
+/// <summary>Atsisiunčiamo dokumento informacija</summary>
+public class DocumentInfo {
+	/// <summary>Vaisto Id</summary>
+	public long? MedId { get; set; }
+	/// <summary>Dokumento Id</summary>
+	public Guid? Id { get; set; }
+	/// <summary>Statusas</summary>
+	public string? Status { get; set; }
+	/// <summary>Dokumento data</summary>
+	public DateTime? Date { get; set; }
+	/// <summary>Failo pavadinimas</summary>
+	public string? File { get; set; }
 }

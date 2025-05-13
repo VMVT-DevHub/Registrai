@@ -20,6 +20,7 @@ namespace Registrai.App {
 			public bool Debug { get; set; } = true;
 			/// <summary>Saugoti klaidų įrašus faile</summary>
 			public bool LogFile { get; set; } = false;
+
 		}
 
 		/// <summary>Konfigūracijos modelis</summary>

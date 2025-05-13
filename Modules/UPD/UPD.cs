@@ -36,11 +36,19 @@ public class UpdRegistras {
 #endif
 					]
 				})
+				.Map(new("/upd/med/{id}/{file}", UpdMedicines.DownloadFile){
+					Name = "Trūkstami vertimai", Params = [
+#if DEBUG
+						new("uat") { Description = "Naudoti UAT aplinką" },
+#endif
+					]
+				})
 				.Map(new("/upd/ref", UpdMedicines.Refs){
 					Name = "Trūkstami vertimai", Params = [
 						new("dt") { Description = "Įrašai nuo", Type=RouteParamType.String }
 					]
 				})
+
 		],
 	};
 }
