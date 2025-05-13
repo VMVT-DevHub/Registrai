@@ -111,15 +111,13 @@ public class Medicine {
 	/// <summary>Tipas</summary>
 	public Ref? Type { get; set; }
 	/// <summary></summary>
-	public Value? Case { get; set; }
+	public ReglCase? ReglCase { get; set; }
 	/// <summary>Teisinis statusas</summary>
 	public Ref? Legal { get; set; }
 	/// <summary>Teisinis pagrindas</summary>
 	public Ref? Basis { get; set; }
 	/// <summary>Registruotojas</summary>
 	public Location? Holder { get; set; }
-	/// <summary>CMS</summary>
-	public List<Ref>? ReglCase { get; set; }
 	/// <summary>Pakuotės</summary>
 	public List<Pack>? Packs { get; set; }
 	/// <summary>Gamintojai</summary>
@@ -270,4 +268,14 @@ public class DocumentInfo {
 	public DateTime? Date { get; set; }
 	/// <summary>Failo pavadinimas</summary>
 	public string? File { get; set; }
+}
+
+/// <summary>Referentinės šalys</summary>
+public class ReglCase : Ref {
+	/// <summary>Procedūra</summary>
+	public string? Name { get; set; }
+	/// <summary>Referencinė šalis</summary>
+	public Ref? ReglCountry { get; set; }
+	/// <summary>Šalys</summary>
+	public List<Ref>? Countries { get; set; }
 }
