@@ -1,4 +1,5 @@
 ﻿using App;
+using App.Routing;
 using System.Collections.Concurrent;
 
 namespace Registrai.Modules.UPD;
@@ -126,7 +127,7 @@ public class Medicine {
 	/// <summary>Klasifikavimas</summary>
 	public List<Value>? Classif { get; set; }
 	/// <summary>Plėtinys</summary>
-	public Ref? Extension { get; set; }
+	public Value? Extension { get; set; }
 	/// <summary>Vartojamas produktas</summary>
 	public List<AdministrableProduct>? AdmProd { get; set; }
 	/// <summary>Gaminio dalys</summary>
@@ -280,3 +281,32 @@ public class ReglCase : Ref {
 	/// <summary>Šalys</summary>
 	public List<Ref>? Countries { get; set; }
 }
+
+
+/// <summary>Vaistų sąrašo filtro užklausa</summary>
+public class MedQuery {
+	/// <summary>Puslapio numeris</summary>
+	/// <example>1</example>
+	public int? Page { get; set; }
+	/// <summary>Įrašų skaičius puslapyje</summary>
+	/// <example>25</example>
+	public int? Limit { get; set; }
+	/// <summary>Rikiuoti pagal</summary>
+	/// <example></example>
+	public string? Order { get; set; }
+	/// <summary>Rikiuoti mažėjančia tvarka</summary>
+	/// <example>true</example>
+	public bool Desc { get; set; }
+	/// <summary>Paieškos tekstas</summary>
+	/// <example></example>
+	public string? Search { get; set; }
+	
+	/// <summary>Gyvūno rūšis</summary>
+	public List<int>? Species { get; set; }
+	//WHERE filter && @filterParam;
+
+	/// <summary>Vaisto grupė</summary>
+	public List<int>? LegalCode { get; set; }
+	//WHERE your_integer_field = ANY(@listOfInts);
+}
+ 

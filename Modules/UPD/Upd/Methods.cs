@@ -41,7 +41,38 @@ public static partial class UpdMedicines {
 		}.Execute();
 		await ctx.Response.WriteAsJsonAsync(m);
 	}
+
+	/// <summary>Vaistų sąrašas (paieška)</summary>
+	/// <param name="ctx"></param>
+	/// <param name="qry">Filtro užklausa</param>
+	/// <returns></returns>
+	public static async Task ListFilter(HttpContext ctx, MedQuery qry) {
+		if (qry.Filter is null && string.IsNullOrWhiteSpace(qry.Search)) { throw new("No filter provided"); }
+
+		var en = ctx.ParamString("lang")?.ToLower() == "en";
+#if DEBUG
+		var tbl = ctx.ParamTrue("uat") ? "upd_uat.v_med" : "upd.v_med";
+#else
+		var tbl = "upd.v_med";
+#endif
+		var m = await new DBPagingRequest<MedListItem>(tbl, DB.VVR) {
+			Limit = (qry.Limit ?? 25).Limit(100),
+			Page = qry.Page ?? 1,
+			Sort = qry.Order ?? "med_date",
+			Desc = qry.Order is null || qry.Desc,
+			JsonField = en ? "list_en" : "list_lt",
+			Search = qry.Search?.MkSerach(),
+			//Where = qry.Filter
+			//TODO: Filtrai
+			//Where = (!ctx.ParamNull("org") || !ctx.ParamNull("country")) ? new() { OrgID = ctx.ParamString("org"), CountryCode = ctx.ParamString("country")?.ToUpper() } : null,
+			WhereAdd = "med_idf is not null",
+			Fields = ListFld,
+			Select = en ? ListEn : ListLt
+		}.Execute();
+		await ctx.Response.WriteAsJsonAsync(m);
+	}
 	private static string? MkSerach(this string? q) => q?.RemoveAccents().RemoveNonAlphanumeric(true).ToLower();
+
 
 	/// <summary>Gauti vaistą pagal ID</summary>
 	/// <param name="ctx"></param>
