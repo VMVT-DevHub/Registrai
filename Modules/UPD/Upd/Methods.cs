@@ -42,7 +42,7 @@ public static partial class UpdMedicines {
 		await ctx.Response.WriteAsJsonAsync(m);
 	}
 
-	/// <summary>Vaistų sąrašas (paieška)</summary>
+	/// <summary>Vaistų sąrašas (detali paieška)</summary>
 	/// <param name="ctx"></param>
 	/// <param name="qry">Filtro užklausa</param>
 	/// <returns></returns>
@@ -78,6 +78,21 @@ public static partial class UpdMedicines {
 	}
 	private static string? MkSerach(this string? q) => q?.RemoveAccents().RemoveNonAlphanumeric(true).ToLower();
 
+
+	/// <summary>Filtrų sąrašas</summary>
+	/// <param name="ctx"></param>
+	/// <returns></returns>
+	public static async Task Filters(HttpContext ctx) {
+		var en = ctx.ParamString("lang")?.ToLower() == "en";
+#if DEBUG
+		var tbl = ctx.ParamTrue("uat") ? "upd_uat.v_med_filter_list" : "upd.v_med_filter_list";
+#else
+		var tbl = "upd.v_med_filter_list";
+#endif
+		using var db = new DBRead($"SELECT {(en ? "en" : "lt")} FROM {tbl};", DB.VVR);
+		ctx.Response.ContentType = "application/json";
+		await ctx.Response.WriteAsync(await db.GetScalar<string?>() ?? "{}");
+	}
 
 	/// <summary>Gauti vaistą pagal ID</summary>
 	/// <param name="ctx"></param>

@@ -13,7 +13,7 @@ public class UpdRegistras {
 		Tag = "upd", Version = "v1",
 		Routes = [
 
-			new RouteGroup("Medicine")
+			new RouteGroup("Sąrašas")
 				.Map(new("/upd/med", UpdMedicines.List){
 					Name = "Pilnas vaistų sąrašas", Response=typeof(MedListItem),
 					Params = [
@@ -35,6 +35,15 @@ public class UpdRegistras {
 #endif
 					],
 				})
+				.Map(new("/upd/med/filters", UpdMedicines.Filters){
+					Name = "Trūkstami vertimai", Response=typeof(MedFilters), Params = [
+						new("lang") { Description = "Kalba (lt/en)", Type=RouteParamType.String, Default="LT" },
+#if DEBUG
+						new("uat") { Description = "Naudoti UAT aplinką" },
+#endif
+					]
+				}),
+			new RouteGroup("Vaisto informacija")
 				.Map(new ("/upd/med/{id}", UpdMedicines.Item) {
 					Name = "Detali vaisto informacija pagal ID", Response=typeof(Medicine),
 					Params = [
@@ -50,7 +59,8 @@ public class UpdRegistras {
 						new("uat") { Description = "Naudoti UAT aplinką" },
 #endif
 					]
-				})
+				}),
+			new RouteGroup("Kiti")
 				.Map(new("/upd/ref", UpdMedicines.Refs){
 					Name = "Trūkstami vertimai", Params = [
 						new("dt") { Description = "Įrašai nuo", Type=RouteParamType.String }

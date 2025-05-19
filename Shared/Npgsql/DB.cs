@@ -29,6 +29,15 @@ namespace App {
 			using var rdr = await GetReader();
 			return await rdr.GetJsonObject<T>(field);
 		}
+		/// <summary>Gauti objektą iš duomenų bazės pirmo įrašo</summary>
+		/// <typeparam name="T">Objekto klasė</typeparam>
+		/// <returns>Suformuotas objektas</returns>
+		public async Task<T?> GetScalar<T>() {
+			await Conn.OpenAsync();
+			var ret = await Cmd.ExecuteScalarAsync();
+			if (ret == null || ret == DBNull.Value) return default;
+			try { return (T)ret; } catch (Exception) { throw; }
+		}
 
 		/// <summary></summary>
 		/// <param name="db"></param>

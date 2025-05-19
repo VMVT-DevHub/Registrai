@@ -308,3 +308,13 @@ public class MedQuery {
 	/// <summary>Farmacinė forma</summary>
 	public List<long>? DoseForm { get; set; }
 }
+
+/// <summary>Galimi filtrai</summary>
+public class MedFilters {
+	/// <summary>Gyvūno rūšis</summary>
+	public Dictionary<long, string>? Species { get; set; }
+	/// <summary>Vaisto grupė</summary>
+	public Dictionary<long, string>? LegalCode { get; set; }
+	/// <summary>Farmacinė forma</summary>
+	public Dictionary<long, string>? DoseForm { get; set; }
+}
