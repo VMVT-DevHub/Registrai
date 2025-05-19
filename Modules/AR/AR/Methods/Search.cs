@@ -17,7 +17,7 @@ public static class ARSearch {
 			if (CachedRemTypes is null) {
 				using var db = new DBRead("SELECT tipas FROM ar.v_app_types;");
 				using var rdr = db.GetReader().Result;
-				var ret = new List<string>(); while (rdr.Read()) ret.AddN(rdr.GetStringN(0)?.RemoveAccents().RemoveNonAlphanumeric(true)); CachedRemTypes = ret;
+				var ret = new List<string>(); while (rdr.Read()) ret.AddN(rdr.GetStringN(0)?.RemoveAccents().RemoveNonAlphanumeric(MkSrhExclude)); CachedRemTypes = ret;
 				CachedRemTypes.Add("r");
 			}
 			return CachedRemTypes;
@@ -26,7 +26,8 @@ public static class ARSearch {
 
 
 
-	private static string? MkSerach(this string? q) => q?.RemoveAccents().RemoveNonAlphanumeric(true).ToLower().RemWords(RemTypes);
+	private static readonly char[] MkSrhExclude = ['-'];
+	private static string? MkSerach(this string? q) => q?.RemoveAccents().RemoveNonAlphanumeric(MkSrhExclude).ToLower().RemWords(RemTypes);
 
 
 	private static readonly List<string> SrhFields = ["ID", "Pavad", "Vietove", "Tipas", "Src", "Adm", "Sav", "Sen", "Gyv", "Gat", "Aob", "search", "sort"];

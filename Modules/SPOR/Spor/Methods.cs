@@ -101,7 +101,8 @@ public static partial class SporOrganisations {
 		await ctx.Response.WriteAsJsonAsync(m.Data);
 	}
 
-	private static string? MkSerach(this string? q) => q?.RemoveAccents().RemoveNonAlphanumeric(true).ToLower();//.RemWords(RemTypes);
+	private static readonly char[] MkSrhExclude = ['-'];
+	private static string? MkSerach(this string? q) => q?.RemoveAccents().RemoveNonAlphanumeric(MkSrhExclude).ToLower();//.RemWords(RemTypes);
 }
 
 
@@ -199,7 +200,8 @@ public static partial class SporReferences {
 		}.Execute();
 		await ctx.Response.WriteAsJsonAsync(m.Data);
 	}
-	private static string? MkSerach(this string? q) => q?.RemoveAccents().RemoveNonAlphanumeric(true).ToLower();
+	private static readonly char[] MkSrhExclude = ['-'];
+	private static string? MkSerach(this string? q) => q?.RemoveAccents().RemoveNonAlphanumeric(MkSrhExclude).ToLower();
 
 }
 
@@ -255,5 +257,7 @@ public static partial class SporSubstances {
 		}.Execute();
 		await ctx.Response.WriteAsJsonAsync(m.Data);
 	}
-	private static string? MkSerach(this string? q) => q?.RemoveAccents().RemoveNonAlphanumeric(true).ToLower();
+
+	private static readonly char[] MkSrhExclude = ['-'];
+	private static string? MkSerach(this string? q) => q?.RemoveAccents().RemoveNonAlphanumeric(MkSrhExclude).ToLower();
 }

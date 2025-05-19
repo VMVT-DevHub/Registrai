@@ -13,7 +13,8 @@ public static class JARSearch {
     /// <summary>Paieškos frazių pašalinimo sąrašas</summary>
     public static List<string> RemTypes => CachedRemTypes;
 
-	private static string? MkSerach(this string? q) => q?.RemoveAccents().RemoveNonAlphanumeric(true).ToLower().RemWords(RemTypes);
+	private static readonly char[] MkSrhExclude = ['-'];
+	private static string? MkSerach(this string? q) => q?.RemoveAccents().RemoveNonAlphanumeric(MkSrhExclude).ToLower().RemWords(RemTypes);
 
 
     private static readonly List<string> SrhFields = ["ID", "Pavad", "Adresas", "Statusas", "Forma", "AobKodas", "FormKodas", "StatusKodas", "Active", "search", "sort"];

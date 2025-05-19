@@ -111,12 +111,12 @@ public static partial class Extensions {
 		return sb.ToString().Normalize(NormalizationForm.FormC);
 	}
 
-	public static string RemoveNonAlphanumeric(this string text, bool dash = false) {
+	public static string RemoveNonAlphanumeric(this string text, char[]? exclude = null) {
 		if (string.IsNullOrEmpty(text)) return text;
 		var sb = new StringBuilder();
 		foreach (char c in text) {
 			//if (exc is not null && exc.Contains(c)) sb.Append(c); else 
-			sb.Append(char.IsLetterOrDigit(c) || (dash && c=='-') ? c : ' ');
+			sb.Append(char.IsLetterOrDigit(c) || (exclude?.Contains(c) == true) ? c : ' ');
 		}
 		return RgxMultiSpace().Replace(sb.ToString(), " ").Trim();
 	}

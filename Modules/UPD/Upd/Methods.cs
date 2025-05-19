@@ -1,8 +1,10 @@
 ﻿using App;
 using App.Routing;
 using Microsoft.AspNetCore.Http;
+using System.Collections.Concurrent;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Text;
 using System.Text.Json.Serialization;
 using System.Xml;
 
@@ -33,8 +35,6 @@ public static partial class UpdMedicines {
 			Desc = desc || ctx.ParamTrue("desc"),
 			JsonField = en ? "list_en" : "list_lt",
 			Search = ctx.ParamString("q")?.MkSerach(),
-			//TODO: Filtrai
-			//Where = (!ctx.ParamNull("org") || !ctx.ParamNull("country")) ? new() { OrgID = ctx.ParamString("org"), CountryCode = ctx.ParamString("country")?.ToUpper() } : null,
 			WhereAdd = "med_idf is not null",
 			Fields = ListFld,
 			Select = en ? ListEn : ListLt
@@ -42,41 +42,83 @@ public static partial class UpdMedicines {
 		await ctx.Response.WriteAsJsonAsync(m);
 	}
 
+
 	/// <summary>Vaistų sąrašas (detali paieška)</summary>
 	/// <param name="ctx"></param>
 	/// <param name="qry">Filtro užklausa</param>
 	/// <returns></returns>
 	public static async Task ListFilter(HttpContext ctx, MedQuery qry) {
-		//if (qry.Filter is null && string.IsNullOrWhiteSpace(qry.Search)) { throw new("No filter provided"); }
-
 		var en = ctx.ParamString("lang")?.ToLower() == "en";
 #if DEBUG
 		var tbl = ctx.ParamTrue("uat") ? "upd_uat.v_med" : "upd.v_med";
 #else
 		var tbl = "upd.v_med";
 #endif
-		var qryadd = new List<string>() { "med_idf is not null" };
-		if (qry.Species?.Count > 0) qryadd.Add("flt_species && @spc");
-		if (qry.LegalCode?.Count > 0) qryadd.Add("flt_legal = ANY(@leg)");
-		if (qry.DoseForm?.Count > 0) qryadd.Add("flt_form = ANY(@frm)");
-		var m = await new DBPagingRequest<MedListItem>(tbl, DB.VVR) {
-			Limit = (qry.Limit ?? 25).Limit(100),
-			Page = qry.Page ?? 1,
-			Sort = qry.Order ?? "med_date",
-			Desc = qry.Order is null || qry.Desc,
-			JsonField = en ? "list_en" : "list_lt",
-			Search = qry.Search?.MkSerach(),
-			Params = new() { { "@spc", qry.Species }, { "@leg", qry.LegalCode }, { "@frm", qry.DoseForm }, },
-			//Where = qry.Filter
-			//TODO: Filtrai
-			//Where = (!ctx.ParamNull("org") || !ctx.ParamNull("country")) ? new() { OrgID = ctx.ParamString("org"), CountryCode = ctx.ParamString("country")?.ToUpper() } : null,
-			WhereAdd = string.Join(" and ", qryadd),
-			Fields = ListFld,
-			Select = en ? ListEn : ListLt
-		}.Execute();
-		await ctx.Response.WriteAsJsonAsync(m);
+		qry.Search = qry.Search?.MkSerach();
+		var (qr, whr, prm) = GetQuery(tbl, qry);
+		var cnt = await GetCount(tbl, qr, whr, prm);
+
+		if (cnt > 0) {
+			var m = await new DBPagingRequest<MedListItem>(tbl, DB.VVR) {
+				Limit = (qry.Limit ?? 25).Limit(100),
+				Page = qry.Page ?? 1,
+				Sort = qry.Order ?? "med_date",
+				Total = false,
+				Desc = qry.Order is null || qry.Desc,
+				JsonField = en ? "list_en" : "list_lt",
+				Search = qry.Search,
+				Params = prm,
+				WhereAdd = whr,
+				Fields = ListFld,
+				Select = en ? ListEn : ListLt
+			}.Execute();
+			m.Total = cnt;
+			await ctx.Response.WriteAsJsonAsync(m); 
+		} else {
+			await ctx.Response.WriteAsJsonAsync(new DBPagingResponse<MedListItem>());
+		}
 	}
-	private static string? MkSerach(this string? q) => q?.RemoveAccents().RemoveNonAlphanumeric(true).ToLower();
+
+	private static readonly char[] MkSrhExclude = ['-', '/'];
+	private static string? MkSerach(this string? q) => q?.RemoveAccents().RemoveNonAlphanumeric(MkSrhExclude).ToLower();
+	private static readonly ConcurrentDictionary<string, (int num, DateTime tmo)> Counts = [];
+	private static DateTime CountClean { get; set; }
+	private static async Task<int> GetCount(string table, string qry, string whr, Dictionary<string, object?> prm) {
+		if (Counts.TryGetValue(qry, out var cnt)) {
+			var now = DateTime.UtcNow;
+			if (cnt.tmo > now) return cnt.num;
+			else if (CountClean < now) {
+				CountClean.AddMinutes(10);
+				var clr = new List<string>();
+				foreach (var i in Counts) if (i.Value.tmo < now) clr.Add(i.Key);
+				foreach (var i in clr) Counts.TryRemove(i, out _);
+			}
+		}
+		using var db = new DBRead($"SELECT count(*) FROM {table} WHERE {whr};", prm, DB.VVR);
+		var ret = await db.GetScalar<long>();
+		return (Counts[qry] = ((int)ret, DateTime.UtcNow.AddMinutes(5))).num;
+	}
+
+	private static (string qry, string whr, Dictionary<string, object?> prm) GetQuery(string table, MedQuery qry) {
+		var prm = new Dictionary<string, object?>() { { "@spc", qry.Species }, { "@leg", qry.LegalCode }, { "@frm", qry.DoseForm } };
+		var qryadd = new List<string>() { "med_idf is not null" };
+		var totcnt = new HashSet<string>();
+		if (qry.Species?.Count > 0) { qryadd.Add("flt_species && @spc"); totcnt.Add("spc:" + string.Join(',', qry.Species)); }
+		if (qry.LegalCode?.Count > 0) { qryadd.Add("flt_legal = ANY(@leg)"); totcnt.Add("leg:" + string.Join(',', qry.LegalCode)); }
+		if (qry.DoseForm?.Count > 0) { qryadd.Add("flt_form = ANY(@frm)"); totcnt.Add("frm:" + string.Join(',', qry.DoseForm)); }
+
+		if (!string.IsNullOrEmpty(qry.Search)) {
+			var qs = qry.Search.Split(" ");
+			for (var i = 0; i < qs.Length; i++) {
+				var j = qs[i];
+				qryadd.Add($"search like '%'||@s{i}||'%'");
+				prm[$"@s{i}"] = j;
+			}
+		}
+
+		return ($"{qry.Search}{string.Join(',', totcnt)}", string.Join(" and ", qryadd), prm);
+	}
+
 
 
 	/// <summary>Filtrų sąrašas</summary>

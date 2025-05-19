@@ -1,4 +1,5 @@
 ﻿using Npgsql;
+using System.Collections.Concurrent;
 using System.Reflection;
 using System.Text.Json;
 
@@ -135,8 +136,8 @@ namespace App {
 			return await new NpgsqlCommand(sql, conn).ExecuteNonQueryAsync();
 		}
 
-		//TODO: Clear old COUNTS
-		private readonly Dictionary<string, (int num, DateTime tmo)> Counts = [];
+		private readonly ConcurrentDictionary<string, (int num, DateTime tmo)> Counts = [];
+		private DateTime CountClean { get; set; } = DateTime.UtcNow.AddMinutes(5);
 
 		/// <summary>Užklausos įrašų skaičiaus gavimas</summary>
 		/// <param name="table">Lentelė</param>
@@ -146,7 +147,16 @@ namespace App {
 		public async Task<int> GetCount(string table, string? where, Dictionary<string, object?>? param = null) {
 			var qry = $"{table}{where}";
 			if (param?.Count > 0) foreach (var i in param) qry += i.Value?.ToString();
-			if (Counts.TryGetValue(qry, out var cnt) && cnt.tmo > DateTime.UtcNow) return cnt.num;
+			if (Counts.TryGetValue(qry, out var cnt)) {
+				var now = DateTime.UtcNow;
+				if(cnt.tmo > now) return cnt.num;
+				else if (CountClean<now) {
+					CountClean.AddSeconds(CountReset * 2);
+					var clr = new List<string>();
+					foreach (var i in Counts) if (i.Value.tmo < now) clr.Add(i.Key);
+					foreach (var i in clr) Counts.TryRemove(i, out _);
+				}
+			}
 			using var db = new DBRead($"SELECT count(*) FROM {table}{where};", param, this);
 			using var rdr = await db.GetReader();
 			if (await rdr.ReadAsync()) return (Counts[qry] = (rdr.GetInt32(0), DateTime.UtcNow.AddSeconds(CountReset))).num;

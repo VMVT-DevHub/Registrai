@@ -130,7 +130,8 @@ public static class ARLists {
 		await Filter(ctx, "ar.v_app_7_patalpos", PatFld, PatSel, page, top, order, ctx.ParamTrue("desc"), null, adm, sav, sen, gyv, gat, aob);
 
 
-	private static string? MkSerach(this string? q) => q?.RemoveAccents().RemoveNonAlphanumeric(true).ToLower().RemWords(Methods.ARSearch.RemTypes);
+	private static readonly char[] MkSrhExclude = ['-'];
+	private static string? MkSerach(this string? q) => q?.RemoveAccents().RemoveNonAlphanumeric(MkSrhExclude).ToLower().RemWords(Methods.ARSearch.RemTypes);
 
 
 	static readonly List<string> AdmFld = ["ID", "Vardas", "Chc", "RegData"];
