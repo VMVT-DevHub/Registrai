@@ -198,6 +198,8 @@ namespace App {
 		public string? JsonField { get; set; }
 		/// <summary>Didėjančia tvarka</summary>
 		public bool Desc { get; set; }
+		/// <summary>Additional parameters</summary>
+		public Dictionary<string, object?>? Params { get; set; }
 		/// <summary>Get total number of rows</summary>
 		public bool Total { get; set; } = true;
 		/// <summary>Vykdyti užklausą</summary>
@@ -209,7 +211,7 @@ namespace App {
 			var srt = $"\"{Sort}\""; var slt = $"\"{string.Join("\",\"", Select)}\"";
 			var advs = false;
 
-			string where = ""; var param = new Dictionary<string, object?>();
+			string where = ""; var param = Params ?? new Dictionary<string, object?>();
 			var whr = new List<string>(); if (!string.IsNullOrEmpty(WhereAdd)) whr.Add(WhereAdd);
 			if (Where is not null) {
 				foreach (var i in typeof(T).GetProperties()) {

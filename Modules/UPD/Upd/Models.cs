@@ -127,7 +127,7 @@ public class Medicine {
 	/// <summary>Klasifikavimas</summary>
 	public List<Value>? Classif { get; set; }
 	/// <summary>Plėtinys</summary>
-	public Value? Extension { get; set; }
+	public Ref? Extension { get; set; }
 	/// <summary>Vartojamas produktas</summary>
 	public List<AdministrableProduct>? AdmProd { get; set; }
 	/// <summary>Gaminio dalys</summary>
@@ -302,11 +302,9 @@ public class MedQuery {
 	public string? Search { get; set; }
 	
 	/// <summary>Gyvūno rūšis</summary>
-	public List<int>? Species { get; set; }
-	//WHERE filter && @filterParam;
-
+	public List<long>? Species { get; set; }
 	/// <summary>Vaisto grupė</summary>
-	public List<int>? LegalCode { get; set; }
-	//WHERE your_integer_field = ANY(@listOfInts);
+	public List<long>? LegalCode { get; set; }
+	/// <summary>Farmacinė forma</summary>
+	public List<long>? DoseForm { get; set; }
 }
- 
