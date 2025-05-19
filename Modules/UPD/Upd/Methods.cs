@@ -11,7 +11,7 @@ namespace Registrai.Modules.UPD;
 /// <summary>UPD duomenų gavimo metodai</summary>
 public static partial class UpdMedicines {
 
-	static readonly List<string> ListFld = ["med_id", "med_date", "list_lt", "list_en"];
+	static readonly List<string> ListFld = ["med_id", "med_date", "list_lt", "list_en", "search"];
 	static readonly List<string> ListLt = ["med_id", "list_lt"];
 	static readonly List<string> ListEn = ["med_id", "list_en"];
 
@@ -32,6 +32,7 @@ public static partial class UpdMedicines {
 			Sort = ctx.ParamString("order") ?? "med_date",
 			Desc = desc || ctx.ParamTrue("desc"),
 			JsonField = en ? "list_en" : "list_lt",
+			Search = ctx.ParamString("q")?.MkSerach(),
 			//TODO: Filtrai
 			//Where = (!ctx.ParamNull("org") || !ctx.ParamNull("country")) ? new() { OrgID = ctx.ParamString("org"), CountryCode = ctx.ParamString("country")?.ToUpper() } : null,
 			WhereAdd = "med_idf is not null",
@@ -40,6 +41,7 @@ public static partial class UpdMedicines {
 		}.Execute();
 		await ctx.Response.WriteAsJsonAsync(m);
 	}
+	private static string? MkSerach(this string? q) => q?.RemoveAccents().RemoveNonAlphanumeric(true).ToLower();
 
 	/// <summary>Gauti vaistą pagal ID</summary>
 	/// <param name="ctx"></param>
@@ -182,7 +184,7 @@ public class UPDRequest(string table) {
 		using var rdr = await db.GetReader();
 		Cfg = new();
 		var tp = typeof(AuthConfig);
-		while (await rdr.ReadAsync()) tp.GetProperty(rdr.GetString(0))?.SetValue(Cfg, rdr.GetString(1));
+		while (await rdr.ReadAsync()) tp.GetProperty(rdr.GetString(0))?.SetValue(Cfg, rdr.GetStringN(1));
 	}
 
 

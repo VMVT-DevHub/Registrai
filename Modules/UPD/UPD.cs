@@ -17,6 +17,7 @@ public class UpdRegistras {
 				.Map(new("/upd/med", UpdMedicines.List){
 					Name = "Medžiagos", Response=typeof(MedListItem),
 					Params = [
+						new("q") { Description = "Paieškos tekstas", Type=RouteParamType.String },
 						new("page") { Description = "Puslapio numeris", Type=RouteParamType.Integer },
 						new("limit") { Description = "Įrašų skaičius puslapyje", Type=RouteParamType.Integer },
 						new("lang") { Description = "Kalba (lt/en)", Type=RouteParamType.String, Default="LT" },
