@@ -40,6 +40,15 @@ namespace App {
 			try { return (T)ret; } catch (Exception) { throw; }
 		}
 
+		/// <summary>Gauti objektą iš duomenų bazės pirmo įrašo</summary>
+		/// <typeparam name="T">Objekto klasė</typeparam>
+		/// <returns>Suformuotas objektas</returns>
+		public async Task<byte[]?> GetBytes(int field = 0) {
+			using var rdr = await GetReader();
+			return await rdr.ReadAsync() ? await rdr.GetFieldValueAsync<byte[]>(field) : null;
+		}
+
+
 		/// <summary></summary>
 		/// <param name="db"></param>
 		/// <param name="sql"></param>

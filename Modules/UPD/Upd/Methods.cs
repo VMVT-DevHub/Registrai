@@ -2,11 +2,14 @@
 using App.Routing;
 using Microsoft.AspNetCore.Http;
 using System.Collections.Concurrent;
+using System.Diagnostics.Eventing.Reader;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Xml;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Registrai.Modules.UPD;
 
@@ -132,8 +135,12 @@ public static partial class UpdMedicines {
 		var tbl = "upd.v_med_filter_list";
 #endif
 		using var db = new DBRead($"SELECT {(en ? "en" : "lt")} FROM {tbl};", DB.VVR);
-		ctx.Response.ContentType = "application/json";
-		await ctx.Response.WriteAsync(await db.GetScalar<string?>() ?? "{}");
+		var dt = await db.GetBytes();
+		if (dt is not null) {
+			ctx.Response.ContentType = "application/json; charset=utf-8";
+			ctx.Response.ContentLength = dt.Length;
+			await ctx.Response.Body.WriteAsync(dt);
+		}
 	}
 
 	/// <summary>Gauti vaistą pagal ID</summary>
@@ -149,9 +156,16 @@ public static partial class UpdMedicines {
 #endif
 		if (long.TryParse(id, out var idi)) {
 			using var db = new DBRead($"SELECT {(en ? "med_en" : "med_lt")} FROM {tbl} WHERE \"med_id\"=@id", DB.VVR, ("@id", idi));
-			var m = await db.GetObject<Medicine>(0);
-			if (m is null) ctx.Response.E404(true);
-			else await ctx.Response.WriteAsJsonAsync(m);
+			var dt = await db.GetBytes();
+			if (dt is not null) {
+				//TODO: Remove this
+				_ = Task.Run(() => { _ = JsonSerializer.Deserialize<Medicine>(Encoding.UTF8.GetString(dt)); });
+
+				ctx.Response.ContentType = "application/json; charset=utf-8";
+				ctx.Response.ContentLength = dt.Length;
+				await ctx.Response.Body.WriteAsync(dt);
+			}
+
 		}
 		else ctx.Response.E404(true); //TODO: Normalią klaidą grąžinti
 	}
