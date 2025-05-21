@@ -156,19 +156,19 @@ public static partial class UpdMedicines {
 #endif
 		if (long.TryParse(id, out var idi)) {
 			using var db = new DBRead($"SELECT {(en ? "med_en" : "med_lt")} FROM {tbl} WHERE \"med_id\"=@id", DB.VVR, ("@id", idi));
-			var m = await db.GetObject<Medicine>(0);
-			if (m is null) ctx.Response.E404(true);
-			else await ctx.Response.WriteAsJsonAsync(m);
+			//var m = await db.GetObject<Medicine>(0);
+			//if (m is null) ctx.Response.E404(true);
+			//else await ctx.Response.WriteAsJsonAsync(m);
 
-			//var dt = await db.GetBytes();
-			//if (dt is not null) {
-			//	//TODO: Remove this
-			//	_ = Task.Run(() => { _ = JsonSerializer.Deserialize<Medicine>(Encoding.UTF8.GetString(dt)); });
+			var dt = await db.GetBytes();
+			if (dt is not null) {
+				//TODO: Remove this
+				_ = Task.Run(() => { _ = JsonSerializer.Deserialize<Medicine>(Encoding.UTF8.GetString(dt)); });
 
-			//	ctx.Response.ContentType = "application/json; charset=utf-8";
-			//	ctx.Response.ContentLength = dt.Length;
-			//	await ctx.Response.Body.WriteAsync(dt);
-			//}
+				ctx.Response.ContentType = "application/json; charset=utf-8";
+				ctx.Response.ContentLength = dt.Length;
+				await ctx.Response.Body.WriteAsync(dt);
+			}
 
 		}
 		else ctx.Response.E404(true); //TODO: Normalią klaidą grąžinti
