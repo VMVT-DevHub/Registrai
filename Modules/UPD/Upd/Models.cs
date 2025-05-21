@@ -134,6 +134,8 @@ public class Medicine {
 	public List<MfctItem>? MfctItem { get; set; }
 	/// <summary>Sudėtis</summary>
 	public List<Ingredient>? Ingredients { get; set; }
+	/// <summary>Indikacijos</summary>
+	public Directions? Directions { get; set; }
 	/// <summary>Prisegti dokumentai</summary>
 	public List<Document>? Documents { get; set; }
 }
@@ -317,4 +319,10 @@ public class MedFilters {
 	public Dictionary<long, string>? LegalCode { get; set; }
 	/// <summary>Farmacinė forma</summary>
 	public Dictionary<long, string>? DoseForm { get; set; }
+}
+
+/// <summary>Indikacijos</summary>
+public class Directions {
+	/// <summary>Aprašymas</summary>
+	public string? Note { get; set; }
 }

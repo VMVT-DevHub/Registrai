@@ -100,7 +100,7 @@ public static partial class UpdMedicines {
 	}
 
 	private static (string qry, string whr, Dictionary<string, object?> prm) GetQuery(string table, MedQuery qry) {
-		var prm = new Dictionary<string, object?>() { { "@spc", qry.Species }, { "@leg", qry.LegalCode }, { "@frm", qry.DoseForm } };
+		var prm = new Dictionary<string, object?>() { { "@spc", qry.Species ?? (object)DBNull.Value }, { "@leg", qry.LegalCode ?? (object)DBNull.Value }, { "@frm", qry.DoseForm ?? (object)DBNull.Value } };
 		var qryadd = new List<string>() { "med_idf is not null" };
 		var totcnt = new HashSet<string>();
 		if (qry.Species?.Count > 0) { qryadd.Add("flt_species && @spc"); totcnt.Add("spc:" + string.Join(',', qry.Species)); }
