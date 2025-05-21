@@ -272,7 +272,8 @@ public class UPDRequest(string table) {
 					new ("grant_type", "client_credentials"),
 					new ("scope", Cfg.AuthScope)
 				]);
-				Client.BaseAddress = new((Cfg.UrlDoc ?? "") + "/");
+
+				Client.BaseAddress ??= new((Cfg.UrlDoc ?? "") + "/");
 
 				using var rsp = Client.PostAsync(urlToken, formContent).Result;
 				if (rsp.IsSuccessStatusCode) {
@@ -292,7 +293,7 @@ public class UPDRequest(string table) {
 
 	private async Task LoadConfig() {
 		using var db = new DBRead($"SELECT cfg_key, cfg_value FROM {Table}", DB.VVR);
-		using var rdr = await db.GetReader();
+		await using var rdr = await db.GetReader();
 		Cfg = new();
 		var tp = typeof(AuthConfig);
 		while (await rdr.ReadAsync()) tp.GetProperty(rdr.GetString(0))?.SetValue(Cfg, rdr.GetStringN(1));
