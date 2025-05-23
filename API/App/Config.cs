@@ -18,6 +18,8 @@ namespace Registrai.App {
 			public bool PrintOutput { get; set; } = true;
 			/// <summary>Spausdinti klaidas konsolėje</summary>
 			public bool Debug { get; set; } = true;
+			/// <summary>Vaistų registro adresas</summary>
+			public string? VVREndpoint { get; set; }
 			/// <summary>Saugoti klaidų įrašus faile</summary>
 			public bool LogFile { get; set; } = false;
 

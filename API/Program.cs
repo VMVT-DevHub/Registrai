@@ -3,6 +3,7 @@ using Registrai.App;
 
 
 using Registrai.Modules;
+using Registrai.Modules.UPD;
 
 
 Startup.Routes(
@@ -18,14 +19,15 @@ Startup.Routes(
 
 var app = Startup.Build(args);
 
-var cfg = new Configuration();
+var cfg = new Configuration().Data;
 
-DB.Master.ConnStr = cfg.Data.ConnString;
-DB.Master.Debug = cfg.Data.Debug;
+DB.Master.ConnStr = cfg.ConnString;
+DB.Master.Debug = cfg.Debug;
 
-DB.VVR.ConnStr = cfg.Data.ConnVVR;
-DB.VVR.Debug = cfg.Data.Debug;
+DB.VVR.ConnStr = cfg.ConnVVR;
+DB.VVR.Debug = cfg.Debug;
 
+UpdMedicines.Endpoint = cfg.VVREndpoint;
 
 app.Run();
 
